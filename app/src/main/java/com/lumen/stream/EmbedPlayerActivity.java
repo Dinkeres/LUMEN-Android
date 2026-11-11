@@ -98,6 +98,10 @@ public class EmbedPlayerActivity extends Activity {
     CrashTracker.install(this, "KaiserWatchPlayer");
     getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     getWindow().setNavigationBarColor(BG);
+    // Prevent normal Android screen timeout while watching inside KaiserWatch.
+    // This is a window flag, not a CPU wakelock. It is cleared when playback
+    // leaves the foreground; it will not prevent manual power-button locking.
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     baseUrl = getIntent().getStringExtra("url");
     if (!validUrl(baseUrl)) { finish(); return; }
     readMetadata(getIntent().getStringExtra("meta"));
@@ -239,6 +243,7 @@ public class EmbedPlayerActivity extends Activity {
 
   private void buildPlayerScreen() {
     root = new FrameLayout(this); root.setBackgroundColor(BG);
+    root.setKeepScreenOn(true);
     page = new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);
     root.addView(page,new FrameLayout.LayoutParams(-1,-1));
 
@@ -273,6 +278,7 @@ public class EmbedPlayerActivity extends Activity {
 
     playerSlot=new FrameLayout(this);
     playerSlot.setBackgroundColor(Color.BLACK);
+    playerSlot.setKeepScreenOn(true);
     page.addView(playerSlot,new LinearLayout.LayoutParams(-1,0,1));
 
     LinearLayout bottom=new LinearLayout(this);
@@ -614,6 +620,8 @@ public class EmbedPlayerActivity extends Activity {
         @Override public void onShowCustomView(View v,CustomViewCallback cb){
           hideFullscreen();
           fullScreenView=v;fullScreenCallback=cb;
+          v.setKeepScreenOn(true);
+          getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
           if(v.getParent() instanceof ViewGroup)((ViewGroup)v.getParent()).removeView(v);
           w.setVisibility(View.GONE);
           // Fullscreen video stays inside the player slot, leaving Episodes and Next accessible.
@@ -646,13 +654,16 @@ public class EmbedPlayerActivity extends Activity {
   }
   @Override protected void onPause(){
     if(web!=null)web.onPause();
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     super.onPause();
   }
   @Override protected void onResume(){
     super.onResume();
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     if(web!=null)web.onResume();
   }
   @Override protected void onDestroy(){
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     imagePool.shutdownNow();
     if(episodeDialog!=null&&episodeDialog.isShowing())episodeDialog.dismiss();
     hideFullscreen();

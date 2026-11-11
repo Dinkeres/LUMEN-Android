@@ -1,8 +1,11 @@
-name: Build Android APK
+name: Build KaiserWatch APK
 on:
   push:
     branches: [main]
   workflow_dispatch:
+concurrency:
+  group: kaiserwatch-android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +35,6 @@ jobs:
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: LUMEN-Android-debug-APK
+          name: KaiserWatch-debug-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

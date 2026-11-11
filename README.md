@@ -28,3 +28,6 @@ One Play button launches the existing in-app Vidlink player engine (JW) in a ded
 - The video toolbar has a stacked-screens icon button for the episode picker, while retaining the Next Episode control.
 - The native episode overlay has a season selector, episode images where Cinemeta provides them, descriptions, currently-playing status and new-episode labels.
 - Progress is **not** fabricated: only episodes explicitly marked watched in the local library receive a completed marker. Exact playback positions are managed by the third-party player when supported.
+
+## v2.3 — Tablet screen sleep fix and build queue
+The player adds `FLAG_KEEP_SCREEN_ON` while the in-app video Activity is visible, including fullscreen video, and clears it on pause/destroy. This fixes *normal screen timeout*, not device power-off/reboots. GitHub Actions now cancels older queued builds on new pushes and uses a clearly named APK artifact. Account-level GitHub runner limits may still prevent a queued workflow from starting.
