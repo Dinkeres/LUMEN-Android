@@ -20,8 +20,10 @@ public class MainActivity extends Activity {
     browser = new WebView(this); browser.setBackgroundColor(Color.rgb(10,10,14));
     browser.getSettings().setJavaScriptEnabled(true);
     browser.getSettings().setDomStorageEnabled(true);
-    browser.getSettings().setMediaPlaybackRequiresUserGesture(true);
+    browser.getSettings().setMediaPlaybackRequiresUserGesture(false);
     browser.getSettings().setAllowFileAccess(false);
+    browser.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);
+    browser.getSettings().setSupportMultipleWindows(false);
     browser.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
     browser.setWebViewClient(new WebViewClient() {
       @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest request) {
