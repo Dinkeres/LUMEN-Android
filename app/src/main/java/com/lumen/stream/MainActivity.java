@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
     settings.setJavaScriptCanOpenWindowsAutomatically(false);
     settings.setSupportMultipleWindows(false);
     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+    browser.addJavascriptInterface(new PlayerBridge(),"LUMEN_APP");
     browser.setWebViewClient(new WebViewClient() {
       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
@@ -100,6 +101,40 @@ public class MainActivity extends Activity {
     });
     root.addView(browser,new FrameLayout.LayoutParams(-1,-1));
     browser.loadUrl("https://app.lumen.local/index.html");
+  }
+
+  public class PlayerBridge {
+    @JavascriptInterface public void openEmbed(String url) {
+      try {
+        Uri parsed=Uri.parse(url);
+        if(!"https".equalsIgnoreCase(parsed.getScheme()) ||
+           !"vidlink.pro".equalsIgnoreCase(parsed.getHost()) ||
+           parsed.getPath()==null ||
+           !(parsed.getPath().startsWith("/movie/")||parsed.getPath().startsWith("/tv/")))return;
+        runOnUiThread(()->{
+          try {
+            Intent playerIntent=new Intent(MainActivity.this,EmbedPlayerActivity.class);
+            playerIntent.putExtra("url",url);
+            startActivity(playerIntent);
+          }catch(Exception e){Log.e(TAG,"Cannot open in-app embed player",e);
+            Toast.makeText(MainActivity.this,"Could not open the in-app player",Toast.LENGTH_LONG).show();}
+        });
+      } catch(Exception e) { Log.e(TAG,"Invalid embed URL",e); }
+    }
+    @JavascriptInterface public void openNative(String url) {
+      try {
+        Uri parsed=Uri.parse(url);
+        if(!"https".equalsIgnoreCase(parsed.getScheme()) || parsed.getHost()==null)return;
+        runOnUiThread(()->{
+          try {
+            Intent playerIntent=new Intent(MainActivity.this,NativeMediaActivity.class);
+            playerIntent.putExtra("url",url);
+            startActivity(playerIntent);
+          }catch(Exception e){Log.e(TAG,"Cannot open native media player",e);
+            Toast.makeText(MainActivity.this,"Could not open native video",Toast.LENGTH_LONG).show();}
+        });
+      } catch(Exception e) {Log.e(TAG,"Invalid direct-video URL",e);}
+    }
   }
 
   private void openExternal(Uri url) {

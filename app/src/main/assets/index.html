@@ -4,7 +4,7 @@
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#090a10;color:#f2f2f5;font:15px system-ui,Arial}header{position:sticky;top:0;z-index:3;background:#090a10ed;border-bottom:1px solid #282936;padding:16px 20px;display:flex;align-items:center;gap:12px}h1{font-size:25px;margin:0;font-weight:900;letter-spacing:3px}h1 b{color:#e62d44}button{font:inherit;cursor:pointer;border:0;color:white;background:#262733;border-radius:10px;padding:11px 14px}button.primary{background:#db203d}input{padding:12px;border:1px solid #444653;border-radius:10px;background:#171820;color:white;width:100%;font:inherit}main{padding:22px 17px 96px;max-width:1160px;margin:auto}.tag{color:#f74762;font-weight:700;letter-spacing:2px;font-size:12px}h2{margin:9px 0 18px;font-size:25px}.tabs{display:flex;gap:9px;flex-wrap:wrap}.tabs button.active{background:#d8203d}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px}.tile{min-width:0;cursor:pointer}.tile img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#242530;border-radius:11px}.tile h3{margin:9px 0 2px;font-size:13px}.tile small{color:#999ca9}.bar{display:flex;gap:8px;margin:18px 0 26px}.bar input{flex:1}.muted{color:#b2b3c1}.empty{padding:42px 10px;text-align:center;color:#a5a8b5}#detail{display:none}#detail .cover{width:140px;border-radius:12px;float:left;margin:0 20px 15px 0}#detail p{line-height:1.6}#detail:after{display:block;content:'';clear:both}.row{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.episode{display:block;padding:13px;margin:9px 0;background:#1d1f2b;border-radius:10px;width:100%;text-align:left}.vidlink-frame{position:relative;width:100%;aspect-ratio:16/9;min-height:230px;background:#050508;border:1px solid #30313e;border-radius:12px;overflow:hidden}.vidlink-frame iframe{display:block;width:100%;height:100%;border:0;background:#000}.source{padding:14px 0;border-bottom:1px solid #353644}video{width:100%;max-height:55vh;background:#000;border-radius:10px}#player{display:none;margin:18px 0;padding:16px;background:#171923;border-radius:14px}#notice{color:#ffb1bc}footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:12px;background:#12131bdc;border-top:1px solid #333;backdrop-filter:blur(12px)}footer button{background:transparent;font-size:13px;padding:8px}#browse h2{margin-top:30px}@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))}footer{display:none}}
 </style></head>
 <body>
-<header><h1>LUMEN<b>.</b></h1><span style="flex:1"></span><button onclick="showProviders()">Sources</button></header>
+<header><h1>LUMEN<b>.</b></h1><span style="flex:1"></span><button onclick="testNativeVideo()">Test video</button><button onclick="showProviders()">Sources</button></header>
 <main>
 <div id="browse">
 <p class="tag">MOVIES & TV SERIES</p><h2>Discover something great.</h2>
@@ -79,35 +79,34 @@ async function openVidlink(forcedId){
     :'https://vidlink.pro/movie/'+tmdb;
   const playerUrl=url+'?primaryColor=DB203D&secondaryColor=20202A&iconColor=FFFFFF&title=false&poster=true&autoplay=false&nextbutton=true';
   $('player').style.display='none';
-  $('video').pause();$('video').removeAttribute('src');
-  // Keep the catalog WebView light: a third-party player in an iframe can kill its renderer.
-  // Browser playback is the safe default; the embedded player remains strictly opt-in.
-  $('sources').innerHTML='<h2>Watch with Vidlink</h2><p class="muted">'+escapeHTML(current.name)+(ep?' · Season '+Number(ep.season)+', Episode '+Number(ep.episode):'')+'</p><div class="row"><button class="primary" id="openExternal">▶ Play in browser</button><button id="tryEmbedded">Try in-app (experimental)</button><button id="otherSources">Other sources</button></div><p id="vidlinkStatus" class="muted">Browser playback is recommended. An embedded player may not work in Android WebView.</p><div class="vidlink-frame" id="vidlinkFrame" style="display:none"></div>';
-  $('openExternal').onclick=()=>{
-    $('vidlinkStatus').textContent='Opening the video in your browser. Return to LUMEN when you finish watching.';
-    window.location.assign(playerUrl);
+  $('video').pause();
+  $('video').removeAttribute('src');
+  $('sources').innerHTML='<h2>Play inside LUMEN</h2><p class="muted">'+escapeHTML(current.name)+(ep?' · Season '+Number(ep.season)+', Episode '+Number(ep.episode):'')+'</p><div class="row"><button class="primary" id="jwBtn">▶ Mobile / JW player</button><button id="standardBtn">Standard player</button><button id="nativeBtn">Test native video</button><button id="otherSources">Other sources</button></div><p id="playerStatus" class="muted">The video opens in a dedicated full-screen player inside LUMEN. Mobile/JW is selected first. If it cannot play, return here and try Standard or the test clip.</p>';
+  const launch=(engine)=>{
+    if(!window.LUMEN_APP||typeof window.LUMEN_APP.openEmbed!=='function'){
+      $('playerStatus').textContent='The Android in-app player is unavailable in this build.';
+      return;
+    }
+    const streamUrl=engine==='jw'?playerUrl+'&player=jw':playerUrl;
+    $('playerStatus').textContent='Opening '+(engine==='jw'?'mobile/JW':'standard')+' player inside LUMEN…';
+    window.LUMEN_APP.openEmbed(streamUrl);
   };
-  $('tryEmbedded').onclick=()=>{
-    const frame=document.createElement('iframe');
-    frame.src=playerUrl;
-    frame.title='Vidlink video player';
-    frame.allow='autoplay; fullscreen; encrypted-media; picture-in-picture';
-    frame.allowFullscreen=true;
-    frame.loading='eager';
-    $('vidlinkFrame').style.display='block';
-    $('vidlinkFrame').replaceChildren(frame);
-    $('vidlinkStatus').textContent='Experimental player loaded. If Android WebView cannot play the video, choose Play in browser.';
-    $('vidlinkFrame').scrollIntoView({behavior:'smooth'});
-  };
+  $('jwBtn').onclick=()=>launch('jw');
+  $('standardBtn').onclick=()=>launch('standard');
+  $('nativeBtn').onclick=()=>testNativeVideo();
   $('otherSources').onclick=()=>loadSources();
-  $('sources').scrollIntoView({behavior:'smooth'});
-  // Do not automatically instantiate third-party video iframes; this previously crashed the app.
+  launch('jw');
 
 }
 
+function testNativeVideo(){
+  const url='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+  if(window.LUMEN_APP&&typeof window.LUMEN_APP.openNative==='function')window.LUMEN_APP.openNative(url);
+  else alert('Native video playback is available in the Android APK.');
+}
 async function loadSources(){if(!current)return;let id=current.type==='series'?(episode||(current.videos||[]).find(v=>v.season>0)?.id):current.id;if(!id){$('sources').innerHTML='<p>No episode selected.</p>';return;}$('sources').innerHTML='<h2>Playback sources</h2><p class="muted">Searching your configured authorized add-ons...</p>';let found=[];for(const addon of addons){try{let j=await getJSON(addon.replace(/\/manifest\.json$/,'')+'/stream/'+current.type+'/'+encodeURIComponent(id)+'.json');(j.streams||[]).forEach(x=>{if(x.url&&/^https:\/\//.test(x.url))found.push({...x,addon})})}catch(e){}}$('sources').innerHTML='<h2>Playback sources</h2>'+(found.length?found.map((v,i)=>'<div class="source"><button data-stream="'+i+'">▶ '+escapeHTML(v.title||v.name||'Play stream')+'</button></div>').join(''):'<p class="muted">No compatible streams found. Add an authorized Stremio-compatible provider in Sources, or play a direct HTTPS video link below.</p>')+'<div class="bar"><input id="directUrl" placeholder="Direct HTTPS .mp4 or .m3u8 video URL"><button onclick="directPlay()">Play</button></div>';document.querySelectorAll('[data-stream]').forEach(el=>el.onclick=()=>play(found[Number(el.dataset.stream)].url));}
 function directPlay(){play($('directUrl').value.trim());}
-function play(url){if(!/^https:\/\//.test(url)){alert('Only HTTPS video URLs are supported.');return;}$('player').style.display='block';$('video').src=url;$('video').load();$('video').play().catch(()=>{});$('notice').textContent='MP4 generally works in Android WebView; some HLS, DRM, codecs and provider restrictions may not be supported.';$('player').scrollIntoView({behavior:'smooth'});}
+function play(url){if(!/^https:\/\//.test(url)){alert('Only HTTPS video URLs are supported.');return;}if(window.LUMEN_APP&&typeof window.LUMEN_APP.openNative==='function'){window.LUMEN_APP.openNative(url);return;}$('player').style.display='block';$('video').src=url;$('video').load();$('video').play().catch(()=>{});$('notice').textContent='Direct video playback test. Some video codecs may not be supported.';$('player').scrollIntoView({behavior:'smooth'});}
 function showProviders(){let value=prompt('Authorized Stremio-compatible add-on URL (HTTPS ending in /manifest.json). Leave empty to list configured providers.\\n\\nCurrent providers:\\n'+(addons.join('\\n')||'None'));if(value===null)return;if(!value.trim())return;if(!/^https:\/\/[^ ]+\/manifest\.json$/.test(value.trim())){alert('Enter a valid HTTPS manifest.json URL');return;}addons.push(value.trim());localStorage.setItem('lumen_addons',JSON.stringify(addons));alert('Provider added. To remove a provider, clear this app’s saved data.');}
 function back(){$('video').pause();$('video').removeAttribute('src');$('browse').style.display='block';$('detail').style.display='none';episode=null;return true;}
 window.lumenBack=()=>{if($('detail').style.display==='block'){back();return true;}return false};
