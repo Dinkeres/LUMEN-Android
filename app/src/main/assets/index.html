@@ -1,127 +1,224 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>LUMEN</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0909"><title>KaiserWatch</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#090a10;color:#f2f2f5;font:15px system-ui,Arial}header{position:sticky;top:0;z-index:3;background:#090a10ed;border-bottom:1px solid #282936;padding:16px 20px;display:flex;align-items:center;gap:12px}h1{font-size:25px;margin:0;font-weight:900;letter-spacing:3px}h1 b{color:#e62d44}button{font:inherit;cursor:pointer;border:0;color:white;background:#262733;border-radius:10px;padding:11px 14px}button.primary{background:#db203d}input{padding:12px;border:1px solid #444653;border-radius:10px;background:#171820;color:white;width:100%;font:inherit}main{padding:22px 17px 96px;max-width:1160px;margin:auto}.tag{color:#f74762;font-weight:700;letter-spacing:2px;font-size:12px}h2{margin:9px 0 18px;font-size:25px}.tabs{display:flex;gap:9px;flex-wrap:wrap}.tabs button.active{background:#d8203d}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px}.tile{min-width:0;cursor:pointer}.tile img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#242530;border-radius:11px}.tile h3{margin:9px 0 2px;font-size:13px}.tile small{color:#999ca9}.bar{display:flex;gap:8px;margin:18px 0 26px}.bar input{flex:1}.muted{color:#b2b3c1}.empty{padding:42px 10px;text-align:center;color:#a5a8b5}#detail{display:none}#detail .cover{width:140px;border-radius:12px;float:left;margin:0 20px 15px 0}#detail p{line-height:1.6}#detail:after{display:block;content:'';clear:both}.row{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.episode{display:block;padding:13px;margin:9px 0;background:#1d1f2b;border-radius:10px;width:100%;text-align:left}.vidlink-frame{position:relative;width:100%;aspect-ratio:16/9;min-height:230px;background:#050508;border:1px solid #30313e;border-radius:12px;overflow:hidden}.vidlink-frame iframe{display:block;width:100%;height:100%;border:0;background:#000}.source{padding:14px 0;border-bottom:1px solid #353644}video{width:100%;max-height:55vh;background:#000;border-radius:10px}#player{display:none;margin:18px 0;padding:16px;background:#171923;border-radius:14px}#notice{color:#ffb1bc}footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:12px;background:#12131bdc;border-top:1px solid #333;backdrop-filter:blur(12px)}footer button{background:transparent;font-size:13px;padding:8px}#browse h2{margin-top:30px}@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))}footer{display:none}}
+:root{color-scheme:dark;--bg:#09090c;--panel:#17151a;--line:#302931;--text:#fbf8f1;--muted:#a9a3ac;--gold:#ffd052;--red:#df3348}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse 110% 410px at 50% -190px,#641b2366,transparent 65%),var(--bg);color:var(--text);font:14px system-ui,-apple-system,Roboto,Arial}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit;border:0;background:#29252c;border-radius:12px;padding:11px 16px;transition:background .15s,transform .15s}button:active{transform:scale(.975)}button:hover{background:#3a3038}button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.primary{background:linear-gradient(110deg,#ed4053,#b91932);font-weight:750;box-shadow:0 8px 30px #ba132d3b}.primary:hover{background:#f0475d}.gold{background:var(--gold);color:#1d1510;font-weight:800}.gold:hover{background:#ffe085}.ghost{background:#ffffff10;border:1px solid #ffffff20}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:13px max(18px,4vw);background:#0b0a0eec;border-bottom:1px solid #35252c;backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}.logo{width:37px;height:37px;border-radius:11px;background:linear-gradient(135deg,#ffdb60,#bd152d);display:grid;place-items:center;color:#190b0e;font-weight:1000;font-size:21px;box-shadow:0 0 0 1px #ffdd6680}.wordmark{font-size:22px;font-weight:950;letter-spacing:-.9px}.wordmark span{color:var(--gold)}
+.header-actions{display:flex;gap:8px;margin-left:auto}.header-actions button{font-size:13px}.nav-top{display:flex;gap:7px}.nav-top button{border-radius:9px;background:transparent;color:#beb5b8}.nav-top button.on{background:#3a252e;color:var(--gold)}
+main{max-width:1240px;margin:auto;padding:21px max(16px,3vw) 112px}
+.hero{display:flex;align-items:end;min-height:330px;position:relative;border-radius:24px;overflow:hidden;background-color:#1b1419;background-position:center 28%;background-size:cover;box-shadow:0 20px 50px #0005;border:1px solid #ffffff20}
+.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#110a0dfa 2%,#110a0dc5 36%,transparent 100%),linear-gradient(0deg,#160910b5,transparent 72%)}.hero-inner{position:relative;z-index:1;padding:28px;max-width:650px}.overline{color:var(--gold);text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:900}.hero h1{margin:10px 0;font-size:clamp(28px,5vw,55px);line-height:1.02;letter-spacing:-1.4px}.hero p{color:#ded5d8;line-height:1.55;max-width:520px;font-size:14px}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hero-actions{margin-top:20px}
+h2{font-size:23px;letter-spacing:-.4px;margin:0}h3{margin:0}.section{margin-top:31px}.section-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:15px}.section-top small{color:var(--muted)}.section-top h2 span{color:var(--gold)}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.tabs button{white-space:nowrap;color:#d9d2d3}.tabs button.on{background:#dd3046;color:white}
+.search-row{display:flex;gap:9px;max-width:680px;margin:16px 0 25px}.search-row input{flex:1;min-width:0;background:#16151a;border:1px solid #484047;border-radius:14px;color:#fff;padding:13px 15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:19px 15px}.tile{cursor:pointer;min-width:0}.posterbox{position:relative;aspect-ratio:2/3;overflow:hidden;border-radius:15px;background:linear-gradient(140deg,#35242b,#141317);border:1px solid #ffffff10;box-shadow:0 7px 22px #0005}.posterbox img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .22s}.tile:hover .posterbox img{transform:scale(1.055)}.tile h3{font-size:13px;margin:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile small{color:#afa6a8;font-size:11px}
+.pill{position:absolute;top:8px;left:8px;border-radius:8px;padding:4px 8px;background:#120c0edb;color:var(--gold);font-weight:800;font-size:10px}.pill.done{color:#75d6aa}.pill.resume{color:#fff;background:#b92441e0}
+.horizontal{display:grid;grid-auto-flow:column;grid-auto-columns:145px;gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity}.horizontal .tile{scroll-snap-align:start}
+#detail{display:none}.details-banner{height:240px;background-color:#17131a;background-size:cover;background-position:center;border-radius:20px;position:relative;overflow:hidden;margin-top:18px}.details-banner:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg),#0b09094d)}.details-head{display:flex;gap:20px;position:relative;margin-top:-82px;padding:0 16px;align-items:end}.details-head img{position:relative;z-index:2;width:130px;max-width:30%;border-radius:13px;border:2px solid #ffffff29;box-shadow:0 12px 35px #000a}.details-copy{position:relative;z-index:2;min-width:0}.details-copy h2{font-size:clamp(25px,4vw,39px);margin-bottom:8px}.muted{color:var(--muted);line-height:1.55}.details-body{margin:23px 12px;max-width:920px}.details-body p{line-height:1.7;color:#cfc8cd}.detail-controls{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 26px}.detail-controls button{min-width:118px}
+.episodes{margin-top:22px}.episodes-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:15px 0}.episodes select{background:#26202a;color:white;border:1px solid #52414b;border-radius:10px;padding:10px}.episode{display:flex;align-items:center;gap:15px;padding:12px 13px;width:100%;text-align:left;background:#1a171e;border:1px solid #322b35;margin:8px 0;border-radius:13px}.episode:hover{border-color:var(--gold)}.episode span.index{color:var(--gold);min-width:38px;font-weight:900}.episode span.ep-main{flex:1;min-width:0}.episode small{display:block;color:#aba2ac;font-size:11px;margin-top:3px}.episode .check{color:#62dda5;font-weight:800}.episode-actions{display:flex;gap:8px}.episode-actions button{font-size:12px;padding:7px 10px}
+.action-panel{margin:20px 0;padding:18px;border:1px solid #66462e;background:linear-gradient(140deg,#35211788,#20151d);border-radius:14px}.action-panel h3{color:var(--gold);margin-bottom:8px}
+#status{min-height:18px;color:var(--muted)}.empty{padding:35px 10px;text-align:center;color:var(--muted);border:1px dashed #4b3444;border-radius:15px}.settings-card{margin-top:20px;padding:18px;border-radius:15px;background:#1b171e;border:1px solid #38303a}.settings-card p{color:var(--muted);line-height:1.55}
+.bottom{position:fixed;z-index:30;bottom:0;left:0;right:0;background:#120e13e8;border-top:1px solid #45313c;display:flex;justify-content:space-around;padding:8px 6px max(8px,env(safe-area-inset-bottom));backdrop-filter:blur(18px)}.bottom button{flex:1;max-width:130px;display:flex;align-items:center;justify-content:center;flex-direction:column;background:none;border-radius:9px;padding:7px 0;gap:4px;font-size:11px;color:#a9a0a7}.bottom button.on{color:var(--gold)}.bottom .symbol{font-size:20px;line-height:20px}
+#toast{pointer-events:none;opacity:0;position:fixed;z-index:60;bottom:95px;left:50%;transform:translateX(-50%);background:#3b2934;color:#fff;border:1px solid #8d5359;border-radius:99px;padding:10px 16px;transition:opacity .2s;white-space:nowrap;max-width:95vw;overflow:hidden;text-overflow:ellipsis}.back{margin-bottom:5px}
+@media(min-width:850px){.grid{grid-template-columns:repeat(auto-fill,minmax(174px,1fr))}.horizontal{grid-auto-columns:185px}.hero{min-height:450px}.bottom{max-width:630px;left:50%;transform:translateX(-50%);border:1px solid #43353e;border-bottom:0;border-radius:16px 16px 0 0}}
+@media(max-width:520px){.nav-top{display:none}.wordmark{font-size:21px}.header-actions button{padding:9px}.hero{min-height:320px}.hero-inner{padding:20px}.hero p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}.details-head{gap:12px;padding:0 5px}.details-head img{width:95px}.details-copy h2{font-size:25px}.detail-controls button{min-width:0}}
 </style></head>
 <body>
-<header><h1>LUMEN<b>.</b></h1><span style="flex:1"></span><button onclick="showDiagnostics()">Diagnostics</button><button onclick="testNativeVideo()">Test video</button><button onclick="showProviders()">Sources</button></header>
+<header><div class="brand" onclick="setTab('all')"><div class="logo">K</div><div class="wordmark">Kaiser<span>Watch</span></div></div><nav class="nav-top"><button id="topAll" onclick="setTab('all')">Home</button><button id="topMovie" onclick="setTab('movie')">Movies</button><button id="topSeries" onclick="setTab('series')">Series</button></nav><div class="header-actions"><button class="ghost" onclick="setTab('saved')">♡ My List</button><button onclick="setTab('settings')">⚙</button></div></header>
 <main>
 <div id="browse">
-<p class="tag">MOVIES & TV SERIES</p><h2>Discover something great.</h2>
-<div class="tabs"><button id="tabAll" class="active" onclick="setTab('all')">Discover</button><button id="tabMovie" onclick="setTab('movie')">Movies</button><button id="tabSeries" onclick="setTab('series')">TV Shows</button><button id="tabSaved" onclick="setTab('saved')">My List</button></div>
-<div class="bar"><input id="search" placeholder="Search movies or shows..." onkeydown="if(event.key==='Enter')searchNow()"><button class="primary" onclick="searchNow()">Search</button></div>
-<p id="status" class="muted">Loading Cinemeta titles...</p><div id="cards" class="grid"></div>
+<section class="hero" id="hero"><div class="hero-inner"><div class="overline">THE GRAND ADVENTURE STARTS HERE</div><h1>Discover your next obsession.</h1><p>Movies, series and stories from across the seas.</p><div class="row hero-actions"><button class="gold" onclick="setTab('movie')">Explore movies</button><button class="ghost" onclick="setTab('series')">Browse shows</button></div></div></section>
+<section id="continueSection" class="section" style="display:none"><div class="section-top"><h2>↪ Continue <span>Watching</span></h2><small>Saved on this device</small></div><div id="continueCards" class="horizontal"></div></section>
+<section class="section"><div class="section-top"><h2 id="sectionTitle">Discover <span>More</span></h2><small id="sectionSubtitle">Cinemeta catalog</small></div><div class="tabs"><button id="tabAll" onclick="setTab('all')">For you</button><button id="tabMovie" onclick="setTab('movie')">Movies</button><button id="tabSeries" onclick="setTab('series')">TV Shows</button><button id="tabSaved" onclick="setTab('saved')">My List</button><button id="tabHistory" onclick="setTab('history')">History</button></div><div class="search-row"><input id="search" type="search" placeholder="Search movies and TV shows..." onkeydown="if(event.key==='Enter')searchNow()"><button class="primary" onclick="searchNow()">Search</button></div><p id="status" role="status"></p><div id="cards" class="grid"></div></section>
+<section id="settingsPanel" class="section" style="display:none"><div class="section-top"><h2>Settings &amp; <span>Library</span></h2></div><div class="settings-card"><h3>Your viewing library</h3><p>Watchlist, history, last opened episode and completed titles are saved on this device. There is no account or automatic cloud sync.</p><p id="statsText"></p><div class="row"><button onclick="exportLibrary()">Export backup</button><button onclick="importLibrary()">Import backup</button><button onclick="clearHistory()">Clear history</button></div><textarea id="backupText" style="display:none;width:100%;height:145px;margin-top:12px;border-radius:10px;padding:12px;background:#0a090d;color:#fff" readonly></textarea><button id="copyBackup" style="display:none;margin-top:9px" onclick="copyBackupData()">Select backup text</button></div><div class="settings-card"><h3>Playback</h3><p>Vidlink is the only configured source. The video opens in a dedicated full-screen Android player inside this app. Use the Mobile/JW player first; Standard uses a second Vidlink engine.</p><p>Exact timestamp progress depends on Vidlink's own player storage. KaiserWatch remembers which title or episode you opened and lets you mark watched items.</p></div></section>
 </div>
-<div id="detail"><button onclick="back()">← Back</button><div id="info" style="margin-top:22px"></div><div id="episodes"></div><div id="sources"></div><div id="player"><video id="video" controls playsinline></video><p id="notice"></p></div></div>
+<div id="detail"><button class="ghost back" onclick="back()">← Back</button><div id="info"></div><div id="episodes"></div><div id="sources"></div></div>
 </main>
-<div id="diagScreen" style="display:none;position:fixed;inset:0;z-index:100;background:#0b0c12;color:#f5f5f6;overflow:auto;padding:28px 15px"><div class="row"><button class="primary" onclick="document.getElementById('diagScreen').style.display='none'">← Back</button><button onclick="refreshDiagnostics()">Refresh log</button><button onclick="copyDiagnostics()">Copy report</button></div><h2>Player diagnostics</h2><p class="muted">Test a video first. This screen shows recent Android process exits and player errors; it does not prove the cause until an error is recorded.</p><textarea id="diagText" readonly style="width:100%;min-height:65vh;padding:14px;background:#1a1b25;color:white;border:1px solid #434452;border-radius:12px;font:12px monospace"></textarea></div>
-<footer><button onclick="setTab('all')">Discover</button><button onclick="setTab('movie')">Movies</button><button onclick="setTab('series')">TV Shows</button><button onclick="setTab('saved')">My List</button></footer>
+<div id="toast"></div>
+<nav class="bottom"><button id="navAll" onclick="setTab('all')"><span class="symbol">⌂</span>Home</button><button id="navMovie" onclick="setTab('movie')"><span class="symbol">▣</span>Movies</button><button id="navSeries" onclick="setTab('series')"><span class="symbol">▤</span>Shows</button><button id="navSaved" onclick="setTab('saved')"><span class="symbol">♡</span>My List</button><button id="navHistory" onclick="setTab('history')"><span class="symbol">◷</span>History</button></nav>
 <script>
-const API='https://v3-cinemeta.strem.io', $=id=>document.getElementById(id);
-let catalog=[], active='all', current=null, episode=null;
-let saved=JSON.parse(localStorage.getItem('lumen_saved')||'{}');
-let addons=JSON.parse(localStorage.getItem('lumen_addons')||'[]');
-const escapeHTML=v=>String(v||'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-async function getJSON(url){let r=await fetch(url);if(!r.ok)throw Error('Network error '+r.status);return r.json();}
-async function init(){try{let [m,s]=await Promise.all([getJSON(API+'/catalog/movie/top.json'),getJSON(API+'/catalog/series/top.json')]);catalog=[...(m.metas||[]).map(x=>({...x,type:'movie'})),...(s.metas||[]).map(x=>({...x,type:'series'}))];$('status').textContent='';render()}catch(e){$('status').textContent='Unable to load Cinemeta. Check your connection and retry.';}}
-function setTab(t){active=t;document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));let id={all:'tabAll',movie:'tabMovie',series:'tabSeries',saved:'tabSaved'}[t];$(id).classList.add('active');$('browse').style.display='block';$('detail').style.display='none';render();}
-function render(items=catalog){let shown=active==='saved'?Object.values(saved):active==='all'?items:items.filter(x=>x.type===active);$('cards').innerHTML=shown.map(x=>'<article class="tile" data-id="'+escapeHTML(x.id)+'" data-type="'+escapeHTML(x.type)+'"><img loading="lazy" alt="" src="'+escapeHTML(x.poster||'')+'"><h3>'+escapeHTML(x.name)+'</h3><small>'+escapeHTML(x.year||x.releaseInfo||'')+'</small></article>').join('');$('status').textContent=shown.length?'':'No titles found.';document.querySelectorAll('.tile').forEach(el=>el.onclick=()=>openTitle(el.dataset.type,el.dataset.id));}
-async function searchNow(){let q=$('search').value.trim();if(!q){render();return;}try{$('status').textContent='Searching...';let [m,s]=await Promise.all(['movie','series'].map(t=>getJSON(API+'/catalog/'+t+'/top/search='+encodeURIComponent(q)+'.json').then(x=>(x.metas||[]).map(y=>({...y,type:t})))));let results=[...m,...s];render(results);$('status').textContent=results.length?'':'No results found.';}catch(e){$('status').textContent='Search unavailable.';}}
-async function openTitle(t,id){$('browse').style.display='none';$('detail').style.display='block';$('info').innerHTML='<p class="muted">Loading details...</p>';$('episodes').innerHTML='';$('sources').innerHTML='';$('player').style.display='none';try{let data=await getJSON(API+'/meta/'+t+'/'+encodeURIComponent(id)+'.json');current={...data.meta,type:t};episode=null;$('info').innerHTML='<img class="cover" src="'+escapeHTML(current.poster||'')+'"><h2>'+escapeHTML(current.name)+'</h2><p class="muted">'+escapeHTML(current.year||current.releaseInfo||'')+' · '+escapeHTML(current.genres?.join(', ')||t)+'</p><p>'+escapeHTML(current.description||'No description available.')+'</p><div class="row"><button class="primary" id="watchBtn">▶ Watch with Vidlink</button><button id="saveBtn">'+(saved[id]?'♥ Remove from My List':'♡ Add to My List')+'</button></div>';$('watchBtn').onclick=()=>openVidlink();$('saveBtn').onclick=()=>{if(saved[id])delete saved[id];else saved[id]={id:current.id,name:current.name,poster:current.poster,type:t,year:current.year};localStorage.setItem('lumen_saved',JSON.stringify(saved));$('saveBtn').textContent=saved[id]?'♥ Remove from My List':'♡ Add to My List'};if(t==='series'){let videos=current.videos||[];let seasons=[...new Set(videos.map(v=>v.season))].sort((a,b)=>a-b);$('episodes').innerHTML='<h2>Episodes</h2><select id="seasonSelect" style="background:#262733;color:white;padding:10px;border-radius:9px"></select><div id="episodeList"></div>';seasons.forEach(s=>{$('seasonSelect').add(new Option('Season '+s,s))});$('seasonSelect').onchange=()=>renderEpisodes(videos);renderEpisodes(videos)}}catch(e){$('info').textContent='Unable to load details.';}}
-function renderEpisodes(videos){let s=Number($('seasonSelect').value);$('episodeList').innerHTML=videos.filter(v=>v.season===s).map(v=>'<button class="episode" data-id="'+escapeHTML(v.id)+'">Episode '+v.episode+': '+escapeHTML(v.title||'Untitled')+'</button>').join('');document.querySelectorAll('.episode').forEach(el=>el.onclick=()=>{episode=el.dataset.id;openVidlink()});}
-
-let vidlinkCache={};try{vidlinkCache=JSON.parse(localStorage.getItem('lumen_vidlink_tmdb')||'{}')||{};}catch(e){vidlinkCache={};}
-async function vidlinkTmdb(meta){
-  const imdb=String(meta.id||'').split(':')[0], type=meta.type==='series'?'tv':'movie', key=type+':'+imdb;
-  const direct=String(meta.moviedb_id||meta.tmdb_id||meta.tmdbId||meta.moviedbId||'');
-  if(/^[1-9]\d*$/.test(direct))return direct;
-  if(/^[1-9]\d*$/.test(String(vidlinkCache[key]||'')))return String(vidlinkCache[key]);
-  if(!/^tt\d{6,12}$/.test(imdb))return null;
-  // Cinemeta uses IMDb IDs. Wikidata can resolve missing TMDB movie/TV IDs without an API key.
-  try{
-    const prop=type==='movie'?'P4947':'P4983';
-    const query='SELECT ?tmdb WHERE { ?item wdt:P345 "'+imdb+'"; wdt:'+prop+' ?tmdb. } LIMIT 1';
-    const response=await getJSON('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(query));
-    const tmdb=String(response?.results?.bindings?.[0]?.tmdb?.value||'');
-    if(/^[1-9]\d*$/.test(tmdb)){
-      vidlinkCache[key]=tmdb;localStorage.setItem('lumen_vidlink_tmdb',JSON.stringify(vidlinkCache));return tmdb;
-    }
-  }catch(e){console.warn('TMDB lookup unavailable',e);}
-  return null;
+'use strict';
+const $=id=>document.getElementById(id),API='https://v3-cinemeta.strem.io';
+let catalog=[], active='all', current=null, episode=null, searchResults=null, openToken=0;
+function readJSON(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return v&&typeof v==='object'?v:fallback;}catch(e){return fallback;}}
+let saved=readJSON('lumen_saved',{}),history=readJSON('kaiser_history_v1',[]),watched=readJSON('kaiser_watched_v1',{});
+let vidlinkCache=readJSON('lumen_vidlink_tmdb',{});
+if(!Array.isArray(history))history=[];
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[x]));
+const persist=()=>{localStorage.setItem('lumen_saved',JSON.stringify(saved));localStorage.setItem('kaiser_history_v1',JSON.stringify(history));localStorage.setItem('kaiser_watched_v1',JSON.stringify(watched));};
+function toast(s){$('toast').textContent=s;$('toast').style.opacity='1';clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>$('toast').style.opacity='0',2400);}
+async function getJSON(url){const r=await fetch(url);if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
+function keyFor(meta,ep){return meta.type+':'+meta.id+(ep?':'+ep.season+':'+ep.episode:'');}
+function poster(x){return x.poster||'';}
+function imageTile(x){
+const recent=history.find(h=>h.id===x.id&&h.type===x.type),complete=!!watched[keyFor(x)];
+const tag=complete?'<span class="pill done">✓ Watched</span>':recent?'<span class="pill resume">↪ Continue</span>':'';
+return '<article class="tile" data-id="'+esc(x.id)+'" data-type="'+esc(x.type)+'"><div class="posterbox"><img loading="lazy" src="'+esc(poster(x))+'" alt="" onerror="this.style.visibility=\'hidden\'">'+tag+'</div><h3>'+esc(x.name)+'</h3><small>'+esc(x.releaseInfo||x.year|| (x.type==='series'?'Series':'Movie'))+'</small></article>';
 }
+function bindTiles(scope){(scope||document).querySelectorAll('.tile').forEach(el=>el.onclick=()=>openTitle(el.dataset.type,el.dataset.id));}
+function renderContinue(){
+const list=history.filter(h=>!watched[keyFor(h)]).slice(0,12);
+$('continueSection').style.display=active==='all'&&list.length?'block':'none';
+$('continueCards').innerHTML=list.map(imageTile).join('');
+bindTiles($('continueCards'));
+}
+function render(items){
+const data=items||searchResults||catalog;
+let shown=active==='saved'?Object.values(saved):active==='history'?history:active==='all'?data:active==='movie'||active==='series'?data.filter(x=>x.type===active):[];
+$('cards').innerHTML=shown.map(imageTile).join('');
+$('status').textContent=shown.length?'':active==='saved'?'Nothing saved yet. Tap ♡ on a movie or show.':active==='history'?'Your viewing history will appear after you start watching.':'No titles found.';
+bindTiles($('cards'));
+renderContinue();
+}
+function setTab(tab){
+active=tab;current=null;episode=null;
+$('browse').style.display='block';$('detail').style.display='none';
+$('hero').style.display=tab==='all'?'flex':'none';
+$('settingsPanel').style.display=tab==='settings'?'block':'none';
+$('cards').parentElement.style.display=tab==='settings'?'none':'block';
+const names={all:'Discover',movie:'Movies',series:'TV Shows',saved:'My List',history:'Watch History',settings:'Settings'};
+$('sectionTitle').innerHTML=esc(names[tab]||'Discover')+' <span>'+(tab==='all'?'More':'')+'</span>';
+['All','Movie','Series','Saved','History'].forEach(k=>{const on=tab===k.toLowerCase();const t=$('tab'+k),n=$('nav'+k),top=$('top'+k);if(t)t.classList.toggle('on',on);if(n)n.classList.toggle('on',on);if(top)top.classList.toggle('on',on);});
+if(tab==='settings')$('statsText').textContent=Object.keys(saved).length+' saved titles · '+history.length+' recently opened · '+Object.keys(watched).length+' marked watched';
+if(tab!=='settings'){render();window.scrollTo(0,0);}
+}
+async function init(){
+setTab('all');$('status').textContent='Loading cinematic adventures…';
+try{
+const [movies,shows]=await Promise.all([getJSON(API+'/catalog/movie/top.json'),getJSON(API+'/catalog/series/top.json')]);
+catalog=[...(movies.metas||[]).map(x=>({...x,type:'movie'})),...(shows.metas||[]).map(x=>({...x,type:'series'}))];
+const hero=catalog.find(x=>x.background&&x.description)||catalog[0];
+if(hero){
+$('hero').style.backgroundImage="url('"+String(hero.background||hero.poster).replace(/'/g,'')+"')";
+$('hero').innerHTML='<div class="hero-inner"><div class="overline">✦ FEATURED STORY</div><h1>'+esc(hero.name)+'</h1><p>'+esc(hero.description||'Discover this story on KaiserWatch.')+'</p><div class="row hero-actions"><button class="gold" id="featureWatch">Discover title</button><span class="muted">'+esc(hero.releaseInfo||'')+'</span></div></div>';
+$('featureWatch').onclick=()=>openTitle(hero.type,hero.id);
+}
+render();
+}catch(e){$('status').textContent='Could not reach Cinemeta. Check internet and reopen KaiserWatch.';}
+}
+async function searchNow(){
+const q=$('search').value.trim();
+if(!q){searchResults=null;render();return;}
+$('status').textContent='Searching…';
+try{
+const [m,s]=await Promise.all(['movie','series'].map(t=>getJSON(API+'/catalog/'+t+'/top/search='+encodeURIComponent(q)+'.json').then(z=>(z.metas||[]).map(x=>({...x,type:t})))));
+searchResults=[...m,...s];render();
+}catch(e){$('status').textContent='Search is unavailable. Try again.';}
+}
+function currentRecorded(){return history.find(h=>current&&h.id===current.id&&h.type===current.type);}
 function selectedEpisode(){
-  const videos=(current?.videos||[]).filter(v=>Number(v.season)>0&&Number(v.episode)>0).sort((a,b)=>a.season-b.season||a.episode-b.episode);
-  return videos.find(v=>v.id===episode)||videos.find(v=>!v.released||Date.parse(v.released)<=Date.now())||null;
+const eps=(current&&current.videos||[]).filter(v=>Number(v.season)>0&&Number(v.episode)>0).sort((a,b)=>a.season-b.season||a.episode-b.episode);
+const fromRecord=currentRecorded();
+const fromSaved=fromRecord&&fromRecord.lastEpisode;
+return eps.find(v=>v.id===episode)||eps.find(v=>fromSaved&&v.season===fromSaved.season&&v.episode===fromSaved.episode)||eps[0]||null;
+}
+async function openTitle(t,id){
+const token=++openToken;
+active=active==='settings'?'all':active;
+$('browse').style.display='none';$('detail').style.display='block';$('info').innerHTML='<div class="empty">Loading details…</div>';$('episodes').innerHTML='';$('sources').innerHTML='';episode=null;
+try{
+const d=await getJSON(API+'/meta/'+t+'/'+encodeURIComponent(id)+'.json');
+if(token!==openToken)return;
+current={...d.meta,type:t};showDetail();
+window.scrollTo(0,0);
+}catch(e){$('info').innerHTML='<div class="empty">Could not open this title.</div>';}
+}
+function showDetail(){
+if(!current)return;
+const x=current,s=!!saved[x.id],last=currentRecorded(),was=!!watched[keyFor(x)];
+const img=esc(x.poster||''),back=esc(x.background||x.poster||'');
+$('info').innerHTML='<div class="details-banner" style="background-image:url(&quot;'+back+'&quot;)"></div><div class="details-head"><img src="'+img+'" alt=""><div class="details-copy"><div class="overline">'+(x.type==='series'?'TV SERIES':'FEATURE FILM')+'</div><h2>'+esc(x.name)+'</h2><div class="muted">'+esc(x.releaseInfo||x.year||'')+(x.imdbRating?' · ★ '+esc(x.imdbRating):'')+' · '+esc((x.genres||[]).slice(0,3).join(' / '))+'</div></div></div><div class="details-body"><p>'+esc(x.description||'No synopsis available.')+'</p><div class="detail-controls"><button class="primary" id="watchNow">▶ '+(last?'Continue watching':'Watch now')+'</button><button class="ghost" id="saveTitle">'+(s?'♥ In My List':'♡ Add to My List')+'</button><button class="ghost" id="markTitle">'+(was?'✓ Watched':'✓ Mark watched')+'</button></div><p class="muted">Playback stays inside KaiserWatch using Vidlink. History and episode selection are saved on this tablet.</p></div>';
+$('watchNow').onclick=()=>openVidlink();
+$('saveTitle').onclick=()=>{if(saved[x.id])delete saved[x.id];else saved[x.id]={id:x.id,name:x.name,poster:x.poster,background:x.background,type:x.type,year:x.year,releaseInfo:x.releaseInfo};persist();showDetail();toast(saved[x.id]?'Saved to My List':'Removed from My List');};
+$('markTitle').onclick=()=>{const k=keyFor(x);if(watched[k])delete watched[k];else watched[k]=Date.now();persist();showDetail();toast(watched[k]?'Marked watched':'Marked unwatched');};
+if(x.type==='series')renderEpisodeLayout();
+}
+function renderEpisodeLayout(){
+if(!current)return;
+const videos=(current.videos||[]).filter(v=>v.season!=null&&v.episode!=null);
+const seasons=[...new Set(videos.map(v=>Number(v.season)))].sort((a,b)=>a-b);
+const ep=selectedEpisode();const initial=ep?Number(ep.season):(seasons.find(s=>s>0)||seasons[0]||1);
+$('episodes').innerHTML='<div class="section episodes"><div class="episodes-head"><h2>Episodes</h2><select id="seasonSelect">'+seasons.map(s=>'<option value="'+s+'">'+(s?'Season '+s:'Specials')+'</option>').join('')+'</select></div><div id="episodeList"></div></div>';
+$('seasonSelect').value=String(initial);
+$('seasonSelect').onchange=renderEpisodeList;
+renderEpisodeList();
+}
+function renderEpisodeList(){
+if(!current||!$('seasonSelect'))return;
+const s=Number($('seasonSelect').value),videos=(current.videos||[]).filter(v=>Number(v.season)===s).sort((a,b)=>a.episode-b.episode);
+$('episodeList').innerHTML=videos.map(v=>{
+const k=keyFor(current,v),done=!!watched[k],recent=currentRecorded();
+const selected=recent&&recent.lastEpisode&&recent.lastEpisode.season===v.season&&recent.lastEpisode.episode===v.episode;
+return '<div class="episode" data-video="'+esc(v.id)+'"><span class="index">'+esc(v.episode)+'</span><span class="ep-main"><strong>'+esc(v.title||v.name||'Episode '+v.episode)+'</strong><small>'+(selected?'↪ Last opened · ':'')+esc(v.released?String(v.released).slice(0,10):'')+'</small></span><div class="episode-actions"><button class="ghost" data-done="'+esc(v.id)+'">'+(done?'✓ Watched':'Mark watched')+'</button><button class="primary" data-play="'+esc(v.id)+'">▶</button></div></div>';
+}).join('');
+$('episodeList').querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{episode=b.dataset.play;openVidlink();});
+$('episodeList').querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{const v=videos.find(x=>x.id===b.dataset.done);if(!v)return;const k=keyFor(current,v);if(watched[k])delete watched[k];else watched[k]=Date.now();persist();renderEpisodeList();});
+}
+async function vidlinkTmdb(meta){
+const imdb=String(meta.id||'').split(':')[0],type=meta.type==='series'?'tv':'movie',key=type+':'+imdb;
+const direct=String(meta.moviedb_id||meta.tmdb_id||meta.tmdbId||meta.moviedbId||'');
+if(/^[1-9]\d*$/.test(direct))return direct;
+if(/^[1-9]\d*$/.test(String(vidlinkCache[key]||'')))return String(vidlinkCache[key]);
+if(!/^tt\d{6,12}$/.test(imdb))return null;
+try{
+const prop=type==='movie'?'P4947':'P4983',query='SELECT ?tmdb WHERE { ?item wdt:P345 "'+imdb+'"; wdt:'+prop+' ?tmdb. } LIMIT 1';
+const res=await getJSON('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(query)),n=String(res&&res.results&&res.results.bindings&&res.results.bindings[0]&&res.results.bindings[0].tmdb.value||'');
+if(/^[1-9]\d*$/.test(n)){vidlinkCache[key]=n;localStorage.setItem('lumen_vidlink_tmdb',JSON.stringify(vidlinkCache));return n;}
+}catch(e){}
+return null;
+}
+function recordPlay(ep,tmdb){
+const x=current;
+if(!x)return;
+const entry={id:x.id,type:x.type,name:x.name,poster:x.poster,background:x.background,releaseInfo:x.releaseInfo,year:x.year,tmdb:tmdb,lastEpisode:ep?{id:ep.id,season:ep.season,episode:ep.episode}:null,at:Date.now()};
+history=[entry,...history.filter(y=>!(y.id===x.id&&y.type===x.type))].slice(0,120);
+persist();
 }
 async function openVidlink(forcedId){
-  if(!current)return;
-  const showId=String(current.id||'').split(':')[0];
-  const ep=current.type==='series'?selectedEpisode():null;
-  if(current.type==='series'&&!ep){
-    $('sources').innerHTML='<h2>Choose an episode</h2><p class="muted">Select a season and episode to start playback.</p>';
-    return;
-  }
-  const selected=forcedId||await vidlinkTmdb(current);
-  if(!selected){
-    $('sources').innerHTML='<h2>Vidlink needs a TMDB ID</h2><p class="muted">Cinemeta provided an IMDb ID ('+escapeHTML(showId)+') but its TMDB ID could not be resolved automatically. Enter the numeric TMDB ID for this title.</p><div class="bar"><input id="manualTmdb" inputmode="numeric" placeholder="Numeric TMDB ID"><button class="primary" id="manualVidlink">Watch</button></div><p class="muted">Find the TMDB ID in the URL for this movie or TV show at themoviedb.org.</p>';
-    $('manualVidlink').onclick=()=>{
-      const x=$('manualTmdb').value.trim();
-      if(!/^[1-9]\d*$/.test(x)){alert('Enter a numeric TMDB ID.');return;}
-      const key=(current.type==='series'?'tv':'movie')+':'+showId;
-      vidlinkCache[key]=x;localStorage.setItem('lumen_vidlink_tmdb',JSON.stringify(vidlinkCache));
-      openVidlink(x);
-    };
-    $('sources').scrollIntoView({behavior:'smooth'});return;
-  }
-  const tmdb=String(selected);
-  if(!/^[1-9]\d*$/.test(tmdb)){alert('TMDB ID is invalid.');return;}
-  const url=current.type==='series'
-    ?'https://vidlink.pro/tv/'+tmdb+'/'+Number(ep.season)+'/'+Number(ep.episode)
-    :'https://vidlink.pro/movie/'+tmdb;
-  const playerUrl=url+'?primaryColor=DB203D&secondaryColor=20202A&iconColor=FFFFFF&title=false&poster=true&autoplay=false&nextbutton=true';
-  $('player').style.display='none';
-  $('video').pause();
-  $('video').removeAttribute('src');
-  $('sources').innerHTML='<h2>Play inside LUMEN</h2><p class="muted">'+escapeHTML(current.name)+(ep?' · Season '+Number(ep.season)+', Episode '+Number(ep.episode):'')+'</p><div class="row"><button class="primary" id="jwBtn">▶ Mobile / JW player</button><button id="standardBtn">Standard player</button><button id="nativeBtn">Test native video</button><button id="otherSources">Other sources</button></div><p id="playerStatus" class="muted">The video opens in a dedicated full-screen player inside LUMEN. Mobile/JW is selected first. If it cannot play, return here and try Standard or the test clip.</p>';
-  const launch=(engine)=>{
-    if(!window.LUMEN_APP||typeof window.LUMEN_APP.openEmbed!=='function'){
-      $('playerStatus').textContent='The Android in-app player is unavailable in this build.';
-      return;
-    }
-    const streamUrl=engine==='jw'?playerUrl+'&player=jw':playerUrl;
-    $('playerStatus').textContent='Opening '+(engine==='jw'?'mobile/JW':'standard')+' player inside LUMEN…';
-    window.LUMEN_APP.openEmbed(streamUrl);
-  };
-  $('jwBtn').onclick=()=>launch('jw');
-  $('standardBtn').onclick=()=>launch('standard');
-  $('nativeBtn').onclick=()=>testNativeVideo();
-  $('otherSources').onclick=()=>loadSources();
-  launch('jw');
-
+if(!current)return;
+const x=current,ep=x.type==='series'?selectedEpisode():null;
+if(x.type==='series'&&!ep){toast('Choose an episode first');return;}
+$('sources').innerHTML='<div class="action-panel"><h3>Preparing your player</h3><p class="muted">Loading Vidlink…</p></div>';
+const id=forcedId||await vidlinkTmdb(x);
+if(!id||!/^[1-9]\d*$/.test(String(id))){
+$('sources').innerHTML='<div class="action-panel"><h3>TMDB ID needed</h3><p>Enter the numeric TMDB ID for this title, from themoviedb.org.</p><div class="row"><input id="manualTmdb" inputmode="numeric" placeholder="TMDB ID" style="padding:12px;max-width:200px;background:#18151a;color:white;border:1px solid #655260;border-radius:10px"><button class="gold" id="tmdbSave">Play</button></div></div>';
+$('tmdbSave').onclick=()=>{const n=$('manualTmdb').value.trim();if(!/^[1-9]\d*$/.test(n)){toast('Enter a numeric TMDB ID');return;}const k=(x.type==='series'?'tv':'movie')+':'+x.id;vidlinkCache[k]=n;localStorage.setItem('lumen_vidlink_tmdb',JSON.stringify(vidlinkCache));openVidlink(n);};
+return;
 }
-
-function showDiagnostics(){
-  $('diagScreen').style.display='block';refreshDiagnostics();
+const url=x.type==='series'?'https://vidlink.pro/tv/'+id+'/'+Number(ep.season)+'/'+Number(ep.episode):'https://vidlink.pro/movie/'+id;
+const playerUrl=url+'?primaryColor=FFD052&secondaryColor=481B26&iconColor=FFFFFF&title=true&poster=true&autoplay=false&nextbutton=true&player=jw';
+recordPlay(ep,String(id));
+$('sources').innerHTML='';
+if(window.LUMEN_APP&&typeof window.LUMEN_APP.openEmbed==='function'){
+window.LUMEN_APP.openEmbed(playerUrl);
+toast('Opening KaiserWatch player');
+}else{
+$('sources').innerHTML='<div class="action-panel"><h3>Android playback required</h3><p>Install the KaiserWatch APK to watch inside the application.</p></div>';
 }
-function refreshDiagnostics(){
-  $('diagText').value=window.LUMEN_APP&&typeof window.LUMEN_APP.diagnostics==='function'
-    ?window.LUMEN_APP.diagnostics()
-    :'Diagnostics require the Android app.';
 }
-function copyDiagnostics(){
-  const field=$('diagText');field.focus();field.select();
-  document.execCommand('copy');
+function back(){++openToken;current=null;episode=null;$('detail').style.display='none';setTab(active==='settings'?'all':active);return true;}
+window.lumenBack=()=>{if($('detail').style.display==='block'){back();return true;}return false;};
+window.kaiserRefresh=()=>{if($('browse').style.display!=='none')render();};
+function exportLibrary(){
+const data={app:'KaiserWatch',version:1,watchlist:saved,history:history,watched:watched,tmdb:vidlinkCache};
+$('backupText').style.display='block';$('copyBackup').style.display='block';$('backupText').value=JSON.stringify(data);
+toast('Backup ready to copy');
 }
-function testNativeVideo(){
-  const url='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
-  if(window.LUMEN_APP&&typeof window.LUMEN_APP.openNative==='function')window.LUMEN_APP.openNative(url);
-  else alert('Native video playback is available in the Android APK.');
+function copyBackupData(){$('backupText').focus();$('backupText').select();document.execCommand('copy');toast('Copy this text to save a backup');}
+function importLibrary(){
+const raw=prompt('Paste KaiserWatch backup JSON. This replaces your local library.');
+if(!raw)return;
+try{
+const d=JSON.parse(raw);
+if(d.app!=='KaiserWatch'||d.version!==1||!Array.isArray(d.history)||!d.watchlist||!d.watched)throw Error('Invalid backup');
+saved=d.watchlist;history=d.history;watched=d.watched;vidlinkCache=d.tmdb||vidlinkCache;
+persist();localStorage.setItem('lumen_vidlink_tmdb',JSON.stringify(vidlinkCache));setTab('settings');toast('Library restored');
+}catch(e){alert('Invalid backup format. No data was changed.');}
 }
-async function loadSources(){if(!current)return;let id=current.type==='series'?(episode||(current.videos||[]).find(v=>v.season>0)?.id):current.id;if(!id){$('sources').innerHTML='<p>No episode selected.</p>';return;}$('sources').innerHTML='<h2>Playback sources</h2><p class="muted">Searching your configured authorized add-ons...</p>';let found=[];for(const addon of addons){try{let j=await getJSON(addon.replace(/\/manifest\.json$/,'')+'/stream/'+current.type+'/'+encodeURIComponent(id)+'.json');(j.streams||[]).forEach(x=>{if(x.url&&/^https:\/\//.test(x.url))found.push({...x,addon})})}catch(e){}}$('sources').innerHTML='<h2>Playback sources</h2>'+(found.length?found.map((v,i)=>'<div class="source"><button data-stream="'+i+'">▶ '+escapeHTML(v.title||v.name||'Play stream')+'</button></div>').join(''):'<p class="muted">No compatible streams found. Add an authorized Stremio-compatible provider in Sources, or play a direct HTTPS video link below.</p>')+'<div class="bar"><input id="directUrl" placeholder="Direct HTTPS .mp4 or .m3u8 video URL"><button onclick="directPlay()">Play</button></div>';document.querySelectorAll('[data-stream]').forEach(el=>el.onclick=()=>play(found[Number(el.dataset.stream)].url));}
-function directPlay(){play($('directUrl').value.trim());}
-function play(url){if(!/^https:\/\//.test(url)){alert('Only HTTPS video URLs are supported.');return;}if(window.LUMEN_APP&&typeof window.LUMEN_APP.openNative==='function'){window.LUMEN_APP.openNative(url);return;}$('player').style.display='block';$('video').src=url;$('video').load();$('video').play().catch(()=>{});$('notice').textContent='Direct video playback test. Some video codecs may not be supported.';$('player').scrollIntoView({behavior:'smooth'});}
-function showProviders(){let value=prompt('Authorized Stremio-compatible add-on URL (HTTPS ending in /manifest.json). Leave empty to list configured providers.\\n\\nCurrent providers:\\n'+(addons.join('\\n')||'None'));if(value===null)return;if(!value.trim())return;if(!/^https:\/\/[^ ]+\/manifest\.json$/.test(value.trim())){alert('Enter a valid HTTPS manifest.json URL');return;}addons.push(value.trim());localStorage.setItem('lumen_addons',JSON.stringify(addons));alert('Provider added. To remove a provider, clear this app’s saved data.');}
-function back(){$('video').pause();$('video').removeAttribute('src');$('browse').style.display='block';$('detail').style.display='none';episode=null;return true;}
-window.lumenBack=()=>{if($('detail').style.display==='block'){back();return true;}return false};
+function clearHistory(){if(!confirm('Clear all viewing history? Your watchlist and watched labels will stay.'))return;history=[];persist();setTab('settings');toast('History cleared');}
 init();
 </script></body></html>
