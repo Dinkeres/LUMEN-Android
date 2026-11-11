@@ -4,6 +4,20 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.LruCache;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -53,7 +67,13 @@ public class EmbedPlayerActivity extends Activity {
   private LinearLayout page;
   private WebView web;
   private TextView nowPlaying, nextSummary, status;
-  private Button nextButton, episodesButton;
+  private Button nextButton;
+  private View episodesButton;
+  private final Handler imageHandler = new Handler(Looper.getMainLooper());
+  private final ExecutorService imagePool = Executors.newFixedThreadPool(3);
+  private final LruCache<String, Bitmap> imageCache = new LruCache<String, Bitmap>(1024*12) {
+    @Override protected int sizeOf(String key, Bitmap bitmap) { return Math.max(1,bitmap.getByteCount()/1024); }
+  };
   private View fullScreenView;
   private WebChromeClient.CustomViewCallback fullScreenCallback;
   private Dialog episodeDialog;
@@ -63,9 +83,11 @@ public class EmbedPlayerActivity extends Activity {
 
   private static class Episode {
     int season, number;
-    String title, released, id;
-    Episode(int s, int n, String t, String r, String id) {
+    String title, released, id, thumbnail, synopsis;
+    boolean watched;
+    Episode(int s, int n, String t, String r, String id, String img, String desc, boolean done) {
       this.season = s; this.number = n; this.title = t; this.released = r; this.id = id;
+      this.thumbnail = img; this.synopsis = desc; this.watched = done;
     }
   }
 
@@ -113,7 +135,8 @@ public class EmbedPlayerActivity extends Activity {
           int s=e.optInt("s", 0), n=e.optInt("e", 0);
           if (s<=0 || n<=0) continue;
           episodes.add(new Episode(s,n,e.optString("t","Episode "+n),
-            e.optString("r",""),e.optString("id","")));
+            e.optString("r",""),e.optString("id",""),
+            e.optString("img",""),e.optString("desc",""),e.optBoolean("watched",false)));
         }
       }
       Collections.sort(episodes, Comparator.comparingInt((Episode e)->e.season)
@@ -155,6 +178,65 @@ public class EmbedPlayerActivity extends Activity {
     return v;
   }
 
+
+  private View episodePickerButton() {
+    View v=new View(this) {
+      final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
+      @Override protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        paint.setColor(Color.WHITE);
+        paint.setStrokeWidth(dp(2.7f));
+        paint.setStyle(Paint.Style.STROKE);
+        float x=getWidth()/2f-dp(15), y=getHeight()/2f-dp(12);
+        canvas.drawRoundRect(x+dp(8),y-dp(6),x+dp(30),y+dp(11),dp(2),dp(2),paint);
+        canvas.drawRoundRect(x+dp(4),y-dp(2),x+dp(26),y+dp(17),dp(2),dp(2),paint);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(PANEL);
+        canvas.drawRoundRect(x,y+dp(4),x+dp(22),y+dp(23),dp(2),dp(2),paint);
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRoundRect(x,y+dp(4),x+dp(22),y+dp(23),dp(2),dp(2),paint);
+      }
+    };
+    v.setBackground(shape(Color.rgb(49,42,52),Color.rgb(71,55,67)));
+    v.setContentDescription("Browse seasons and episodes");
+    v.setClickable(true);v.setFocusable(true);
+    v.setOnClickListener(w->showEpisodes());
+    return v;
+  }
+
+  private void loadThumbnail(ImageView target,String remote) {
+    if(remote==null||!remote.startsWith("https://"))return;
+    target.setTag(remote);
+    Bitmap cached=imageCache.get(remote);
+    if(cached!=null) {target.setImageBitmap(cached);return;}
+    imagePool.execute(()->{
+      Bitmap result=null;
+      HttpURLConnection connection=null;
+      try {
+        connection=(HttpURLConnection)new URL(remote).openConnection();
+        connection.setConnectTimeout(4000);
+        connection.setReadTimeout(6000);
+        connection.setInstanceFollowRedirects(true);
+        connection.setRequestProperty("User-Agent","KaiserWatch/2.2");
+        if(connection.getResponseCode()==200 && connection.getContentLengthLong()<3_000_000) {
+          try(InputStream in=connection.getInputStream()) {
+            BitmapFactory.Options options=new BitmapFactory.Options();
+            options.inSampleSize=2;
+            result=BitmapFactory.decodeStream(in,null,options);
+          }
+        }
+      }catch(Exception ignored){}finally{if(connection!=null)connection.disconnect();}
+      if(result!=null) {
+        final Bitmap img=result;
+        imageCache.put(remote,img);
+        imageHandler.post(()->{
+          if(!isFinishing()&&remote.equals(target.getTag()))target.setImageBitmap(img);
+        });
+      }
+    });
+  }
+
   private void buildPlayerScreen() {
     root = new FrameLayout(this); root.setBackgroundColor(BG);
     page = new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);
@@ -180,9 +262,8 @@ public class EmbedPlayerActivity extends Activity {
     heading.addView(nowPlaying);
     toolbar.addView(heading,new LinearLayout.LayoutParams(0,-1,1));
 
-    episodesButton=button("Episodes",false);
-    episodesButton.setOnClickListener(v->showEpisodes());
-    toolbar.addView(episodesButton,new LinearLayout.LayoutParams(dp(90),dp(45)));
+    episodesButton=episodePickerButton();
+    toolbar.addView(episodesButton,new LinearLayout.LayoutParams(dp(52),dp(47)));
 
     nextButton=button("Next ›",true);
     nextButton.setOnClickListener(v->playNext());
@@ -271,85 +352,198 @@ public class EmbedPlayerActivity extends Activity {
     reportEpisode();refreshLabels();loadEpisode();
   }
 
+  // Netflix-inspired episode overlay, kept in the native Android activity so
+  // viewers can switch episodes without navigating out of KaiserWatch.
   private void showEpisodes() {
     if(!"series".equals(type))return;
     final Dialog dialog=new Dialog(this);
     episodeDialog=dialog;
     LinearLayout sheet=new LinearLayout(this);
     sheet.setOrientation(LinearLayout.VERTICAL);
-    sheet.setPadding(dp(19),dp(16),dp(19),dp(18));
-    sheet.setBackground(shape(Color.rgb(26,22,30),Color.rgb(79,54,64)));
+    sheet.setBackgroundColor(Color.rgb(19,19,20));
 
-    LinearLayout head=new LinearLayout(this);
-    head.setGravity(Gravity.CENTER_VERTICAL);
-    TextView name=label("Episodes  ·  "+title,19,Color.WHITE);
-    name.setTypeface(null,1);name.setSingleLine(true);
-    name.setEllipsize(TextUtils.TruncateAt.END);
-    head.addView(name,new LinearLayout.LayoutParams(0,-2,1));
-    Button close=button("✕",false);
+    LinearLayout heading=new LinearLayout(this);
+    heading.setGravity(Gravity.CENTER_VERTICAL);
+    heading.setPadding(dp(14),dp(8),dp(14),dp(6));
+    sheet.addView(heading,new LinearLayout.LayoutParams(-1,dp(67)));
+
+    Button close=button("‹",false);
+    close.setTextSize(27);
+    close.setBackgroundColor(Color.TRANSPARENT);
     close.setOnClickListener(v->dialog.dismiss());
-    head.addView(close,new LinearLayout.LayoutParams(dp(50),dp(43)));
-    sheet.addView(head);
-    TextView explanation=label("Switch seasons or tap an episode. Newly released episodes are marked NEW.",12,MUTED);
-    explanation.setPadding(0,dp(8),0,dp(10));
-    sheet.addView(explanation);
+    heading.addView(close,new LinearLayout.LayoutParams(dp(42),dp(50)));
+
+    TextView seasonHeading=label("Season "+season,24,Color.WHITE);
+    seasonHeading.setTypeface(null,1);
+    seasonHeading.setPadding(dp(5),0,0,0);
+    heading.addView(seasonHeading,new LinearLayout.LayoutParams(0,-2,1));
 
     List<Integer> seasons=new ArrayList<>();
     for(Episode e:episodes)if(!seasons.contains(e.season))seasons.add(e.season);
-    if(seasons.isEmpty()){
-      sheet.addView(label("No episode information is available for this series.",14,MUTED));
-    }else{
-      Spinner spinner=new Spinner(this);
-      List<String> seasonLabels=new ArrayList<>();
-      for(int s:seasons)seasonLabels.add("Season "+s);
-      ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,seasonLabels);
-      spinner.setAdapter(adapter);
-      sheet.addView(spinner,new LinearLayout.LayoutParams(-1,dp(48)));
-      ScrollView scroll=new ScrollView(this);
-      scroll.setFillViewport(false);
-      LinearLayout rows=new LinearLayout(this);rows.setOrientation(LinearLayout.VERTICAL);
-      scroll.addView(rows);
-      sheet.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-      spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-        @Override public void onItemSelected(AdapterView<?> p,View v,int position,long id){
-          int s=seasons.get(position);
-          rows.removeAllViews();
-          for(Episode ep:episodes) {
-            if(ep.season!=s)continue;
-            boolean upcoming=!released(ep);
-            String caption="E"+ep.number+"  ·  "+ep.title;
-            if(newEpisode(ep))caption+="   ★ NEW";
-            else if(upcoming)caption+="   · Upcoming";
-            else if(ep.released!=null&&ep.released.length()>=10)caption+="   · "+ep.released.substring(0,10);
-            if(ep.season==season&&ep.number==number)caption="▶ "+caption;
-            Button b=button(caption,ep.season==season&&ep.number==number);
-            b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-            b.setEnabled(!upcoming);
-            b.setAlpha(upcoming?.45f:1f);
-            LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(52));
-            bp.bottomMargin=dp(7);
-            rows.addView(b,bp);
-            b.setOnClickListener(w->switchEpisode(ep));
-          }
-        }
-        @Override public void onNothingSelected(AdapterView<?> p){}
-      });
-      int selected=seasons.indexOf(season);
-      spinner.setSelection(Math.max(selected,0));
-    }
+    if(seasons.isEmpty())seasons.add(season);
+    Collections.sort(seasons);
+    Spinner seasonSelect=new Spinner(this);
+    ArrayList<String> labels=new ArrayList<>();
+    for(Integer s:seasons)labels.add("Season "+s);
+    ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,labels) {
+      @Override public View getView(int p,View old,ViewGroup parent) {
+        TextView t=(TextView)super.getView(p,old,parent);
+        t.setTextColor(GOLD);t.setTextSize(13);
+        return t;
+      }
+      @Override public View getDropDownView(int p,View old,ViewGroup parent) {
+        TextView t=(TextView)super.getDropDownView(p,old,parent);
+        t.setTextColor(Color.WHITE);
+        t.setBackgroundColor(Color.rgb(48,46,48));
+        t.setPadding(dp(12),dp(14),dp(12),dp(14));
+        return t;
+      }
+    };
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    seasonSelect.setAdapter(adapter);
+    heading.addView(seasonSelect,new LinearLayout.LayoutParams(dp(125),dp(52)));
 
+    TextView sub=label("Select an episode to start playing",12,MUTED);
+    sub.setPadding(dp(20),0,0,dp(13));
+    sheet.addView(sub);
+
+    ScrollView scroll=new ScrollView(this);
+    scroll.setFillViewport(false);
+    LinearLayout rows=new LinearLayout(this);
+    rows.setOrientation(LinearLayout.VERTICAL);
+    scroll.addView(rows);
+    sheet.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+
+    seasonSelect.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+      @Override public void onItemSelected(AdapterView<?> p,View v,int index,long id){
+        int chosenSeason=seasons.get(index);
+        seasonHeading.setText("Season "+chosenSeason);
+        rows.removeAllViews();
+        boolean added=false;
+        for(Episode ep:episodes) {
+          if(ep.season!=chosenSeason)continue;
+          added=true;
+          addEpisodeRow(rows,ep);
+        }
+        if(!added){
+          TextView noEpisodes=label("No episodes listed for this season.",15,MUTED);
+          noEpisodes.setPadding(dp(20),dp(26),dp(20),dp(26));
+          rows.addView(noEpisodes);
+        }
+      }
+      @Override public void onNothingSelected(AdapterView<?> p){}
+    });
     dialog.setContentView(sheet);
+    dialog.show();
     Window window=dialog.getWindow();
-    if(window!=null) {
+    if(window!=null){
       window.setBackgroundDrawableResource(android.R.color.transparent);
       window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-      WindowManager.LayoutParams lp=window.getAttributes();
-      lp.gravity=Gravity.BOTTOM;lp.dimAmount=.74f;
-      window.setAttributes(lp);
+      WindowManager.LayoutParams params=window.getAttributes();
+      params.gravity=Gravity.BOTTOM;
+      params.dimAmount=.76f;
+      window.setAttributes(params);
+      window.setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*.91f));
     }
-    dialog.show();
-    window=dialog.getWindow();
-    if(window!=null)window.setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*.78f));
+    seasonSelect.setSelection(Math.max(0,seasons.indexOf(season)));
+  }
+
+  private void addEpisodeRow(LinearLayout parent,Episode ep){
+    boolean current=ep.season==season&&ep.number==number;
+    boolean upcoming=!released(ep);
+    LinearLayout whole=new LinearLayout(this);
+    whole.setOrientation(LinearLayout.VERTICAL);
+    whole.setPadding(dp(15),dp(15),dp(15),dp(15));
+    whole.setBackgroundColor(current?Color.rgb(32,32,34):
+      (ep.number%2==1?Color.rgb(39,39,41):Color.rgb(22,22,23)));
+    whole.setClickable(!upcoming);
+    whole.setEnabled(!upcoming);
+    whole.setAlpha(upcoming?.48f:1f);
+
+    LinearLayout top=new LinearLayout(this);
+    top.setGravity(Gravity.CENTER_VERTICAL);
+    top.setOrientation(LinearLayout.HORIZONTAL);
+    whole.addView(top,new LinearLayout.LayoutParams(-1,-2));
+
+    TextView num=label(String.valueOf(ep.number),21,Color.WHITE);
+    num.setTypeface(null,1);
+    num.setGravity(Gravity.CENTER);
+    top.addView(num,new LinearLayout.LayoutParams(dp(34),-2));
+
+    LinearLayout middle=new LinearLayout(this);
+    middle.setOrientation(LinearLayout.VERTICAL);
+    middle.setPadding(dp(8),0,dp(10),0);
+    top.addView(middle,new LinearLayout.LayoutParams(0,-2,1));
+    TextView name=label(ep.title,16,Color.WHITE);
+    name.setTypeface(null,1);
+    name.setMaxLines(2);
+    name.setEllipsize(TextUtils.TruncateAt.END);
+    middle.addView(name);
+    String stat=current?"● Now Playing":newEpisode(ep)?"★ NEW EPISODE":
+      upcoming?"Coming soon":ep.watched?"✓ Watched":
+      ep.released!=null&&ep.released.length()>=10?ep.released.substring(0,10):"";
+    if(!stat.isEmpty()){
+      TextView info=label(stat,11,current?GOLD:newEpisode(ep)?GOLD:MUTED);
+      LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(-1,-2);
+      ip.topMargin=dp(5);
+      middle.addView(info,ip);
+    }
+    TextView right=label(current?"◆":upcoming?"":"▶",17,current?GOLD:Color.WHITE);
+    right.setGravity(Gravity.CENTER);
+    top.addView(right,new LinearLayout.LayoutParams(dp(32),-2));
+
+    LinearLayout detail=new LinearLayout(this);
+    detail.setOrientation(LinearLayout.HORIZONTAL);
+    detail.setGravity(Gravity.TOP);
+    LinearLayout.LayoutParams details=new LinearLayout.LayoutParams(-1,-2);
+    details.topMargin=dp(11);
+    whole.addView(detail,details);
+
+    FrameLayout imageBox=new FrameLayout(this);
+    imageBox.setBackground(shape(Color.rgb(51,47,51),0));
+    ImageView image=new ImageView(this);
+    image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    imageBox.addView(image,new FrameLayout.LayoutParams(-1,-1));
+    TextView placeholder=label("S"+ep.season+" · E"+ep.number,13,GOLD);
+    placeholder.setGravity(Gravity.CENTER);
+    imageBox.addView(placeholder,new FrameLayout.LayoutParams(-1,-1));
+    if(ep.thumbnail!=null&&ep.thumbnail.startsWith("https://")){
+      loadThumbnail(image,ep.thumbnail);
+      // Keep placeholder as a low-contrast fallback until the thumbnail loads.
+      placeholder.setAlpha(.25f);
+    }
+    if(current){
+      TextView now=label("▶ Now Playing",12,Color.WHITE);
+      now.setGravity(Gravity.CENTER);
+      now.setBackgroundColor(0xA8000000);
+      imageBox.addView(now,new FrameLayout.LayoutParams(-1,-1));
+    }
+    detail.addView(imageBox,new LinearLayout.LayoutParams(dp(128),dp(73)));
+
+    LinearLayout summaryBox=new LinearLayout(this);
+    summaryBox.setPadding(dp(14),0,0,0);
+    summaryBox.setOrientation(LinearLayout.VERTICAL);
+    detail.addView(summaryBox,new LinearLayout.LayoutParams(0,-2,1));
+    TextView description=label(ep.synopsis!=null&&!ep.synopsis.trim().isEmpty()
+      ?ep.synopsis:"Select to watch this episode.",13,Color.rgb(221,219,220));
+    description.setMaxLines(4);
+    description.setEllipsize(TextUtils.TruncateAt.END);
+    description.setLineSpacing(dp(3),1f);
+    summaryBox.addView(description);
+
+    if(ep.watched){
+      View bar=new View(this);
+      bar.setBackgroundColor(GOLD);
+      LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(2));
+      bp.topMargin=dp(10);
+      summaryBox.addView(bar,bp);
+    }
+
+    whole.setOnClickListener(v->switchEpisode(ep));
+    parent.addView(whole,new LinearLayout.LayoutParams(-1,-2));
+    View separator=new View(this);
+    separator.setBackgroundColor(Color.rgb(95,95,97));
+    parent.addView(separator,new LinearLayout.LayoutParams(-1,dp(1)));
   }
 
   private String activeUrl() {
@@ -459,6 +653,7 @@ public class EmbedPlayerActivity extends Activity {
     if(web!=null)web.onResume();
   }
   @Override protected void onDestroy(){
+    imagePool.shutdownNow();
     if(episodeDialog!=null&&episodeDialog.isShowing())episodeDialog.dismiss();
     hideFullscreen();
     if(web!=null){

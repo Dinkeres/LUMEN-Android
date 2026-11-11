@@ -21,3 +21,10 @@ Brand: KaiserWatch. The Android launcher and in-app header use the supplied pira
 
 ## v2.1 — Netflix-style viewing
 One Play button launches the existing in-app Vidlink player engine (JW) in a dedicated full-screen activity. There are no engine/server selection buttons. Movies show only Back; TV shows add always-available Episodes and Next controls. The episode drawer provides season selection, recently released badges and the full episode list. Choosing an episode reloads the same embedded provider in-place. On return to the catalog, the selected episode is saved to Continue Watching. Vidlink's own nextbutton remains enabled, but its timing and source availability are controlled by the third party.
+
+## v2.2 — Live search + episode panel
+- Search filters visible titles instantly as characters are typed and performs a debounced Cinemeta search at 2+ characters. Previous responses cannot overwrite newer searches.
+- Search includes scrollable suggestions and landscape title cards.
+- The video toolbar has a stacked-screens icon button for the episode picker, while retaining the Next Episode control.
+- The native episode overlay has a season selector, episode images where Cinemeta provides them, descriptions, currently-playing status and new-episode labels.
+- Progress is **not** fabricated: only episodes explicitly marked watched in the local library receive a completed marker. Exact playback positions are managed by the third-party player when supported.
