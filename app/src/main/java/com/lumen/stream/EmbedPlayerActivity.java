@@ -39,6 +39,8 @@ public class EmbedPlayerActivity extends Activity {
     // Android 9+ requires each process using WebView to have its own data directory.
     if(Build.VERSION.SDK_INT >= 28) WebView.setDataDirectorySuffix("lumen_embed");
     super.onCreate(state);
+    CrashTracker.install(this,"VidlinkEmbed");
+    CrashTracker.record(this,"VidlinkEmbed","Opened player Activity");
     getWindow().setStatusBarColor(Color.rgb(8,9,15));
     getWindow().setNavigationBarColor(Color.rgb(8,9,15));
     String incoming=getIntent().getStringExtra("url");
@@ -110,6 +112,7 @@ public class EmbedPlayerActivity extends Activity {
     }
     if(jw)builder.appendQueryParameter("player","jw");
     String uri=builder.build().toString();
+    CrashTracker.record(this,"VidlinkEmbed","Loading "+(jw?"JW":"Standard")+" engine");
 
     status.setText(jw?"Loading Vidlink mobile/JW engine…":"Loading Vidlink standard engine…");
     try {
@@ -139,9 +142,17 @@ public class EmbedPlayerActivity extends Activity {
           return false;
         }
         @Override public void onReceivedError(WebView view,WebResourceRequest req,WebResourceError error) {
-          if(req.isForMainFrame())status.setText("Player network error: "+error.getErrorCode()+". Try the other engine.");
+          if(req.isForMainFrame()){
+            status.setText("Player network error: "+error.getErrorCode()+". Try the other engine.");
+            CrashTracker.record(EmbedPlayerActivity.this,"VidlinkEmbed network","WebView error code="+error.getErrorCode());
+          }
+        }
+        @Override public void onPageFinished(WebView view,String url) {
+          status.setText("Vidlink page loaded. Tap ▶ to test playback; report any crash from LUMEN Diagnostics.");
+          CrashTracker.record(EmbedPlayerActivity.this,"VidlinkEmbed","Page finished loading");
         }
         @Override public boolean onRenderProcessGone(WebView view,RenderProcessGoneDetail detail) {
+          CrashTracker.record(EmbedPlayerActivity.this,"VidlinkEmbed renderer","Process exited; crash="+detail.didCrash());
           Log.e(TAG,"Embed renderer exited, didCrash="+detail.didCrash());
           if(view.getParent() instanceof ViewGroup) ((ViewGroup)view.getParent()).removeView(view);
           if(view==playerWebView)playerWebView=null;
@@ -166,6 +177,7 @@ public class EmbedPlayerActivity extends Activity {
       web.loadUrl(uri);
     }catch(Exception ex) {
       Log.e(TAG,"Unable to open in-app player",ex);
+      CrashTracker.record(this,"VidlinkEmbed error",ex.toString());
       status.setText("Could not load this engine. Try Standard or close the player.");
     }
   }

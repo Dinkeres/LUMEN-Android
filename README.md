@@ -13,3 +13,6 @@ v1.2: Clicking Watch shows an external-browser Vidlink option first; in-app embe
 Vidlink opens in a dedicated full-screen Android Activity inside LUMEN, not a browser or embedded iframe in the catalog. The player runs in a separate app process to protect the movie catalog from unstable web video engines. Vidlink has two modes: Mobile / JW and Standard. Actual provider playback depends on its remote stream and Android WebView compatibility.
 
 A 'Test video' button in the catalog plays MDN's CC0 Flower sample in Android Media3 ExoPlayer. Authorized direct MP4 and HLS sources also use Media3. If this clip plays but Vidlink fails, the likely issue is the third-party embed, not the native Android player.
+
+## v1.4 Playback troubleshooting
+The test video now starts paused and defaults to a software-preferred Media3 decoder (with fallback); there is also a system decoder button. Both native playback and the Vidlink web player run in isolated app processes. From LUMEN's home screen, tap Diagnostics to view recent Android process-exit reasons and player errors. You can copy the report and share it to diagnose crashes without guessing. Diagnostics may include device model, app process names, and error text. No playback provider is guaranteed to work.

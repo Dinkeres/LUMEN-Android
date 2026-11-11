@@ -30,6 +30,8 @@ public class MainActivity extends Activity {
 
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    CrashTracker.install(this,"Catalog");
+    CrashTracker.record(this,"Catalog","Launched main screen");
     getWindow().setStatusBarColor(Color.rgb(10,10,14));
     getWindow().setNavigationBarColor(Color.rgb(10,10,14));
     root = new FrameLayout(this);
@@ -76,6 +78,7 @@ public class MainActivity extends Activity {
       }
       @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
         Log.e(TAG,"WebView renderer exited; crashed="+detail.didCrash());
+        CrashTracker.record(MainActivity.this,"Catalog WebView","Renderer exited, crashed="+detail.didCrash());
         hideVideo();
         if(view.getParent() instanceof ViewGroup) ((ViewGroup)view.getParent()).removeView(view);
         view.destroy();
@@ -83,7 +86,7 @@ public class MainActivity extends Activity {
           browser=null;
           createBrowser(); // Never reload the crashed third-party player automatically.
           Toast.makeText(MainActivity.this,
-            "The video player stopped unexpectedly. LUMEN has recovered; try browser playback.",
+            "The catalog recovered. Check Diagnostics for the player error.",
             Toast.LENGTH_LONG).show();
         }
         return true;
@@ -105,6 +108,7 @@ public class MainActivity extends Activity {
   }
 
   public class PlayerBridge {
+    @JavascriptInterface public String diagnostics(){return CrashTracker.report(MainActivity.this);}
     @JavascriptInterface public void openEmbed(String url) {
       try {
         Uri parsed=Uri.parse(url);
