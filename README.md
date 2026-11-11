@@ -18,3 +18,6 @@ Continue Watching records opened titles and episodes, not guaranteed exact video
 GitHub Actions > Build Android APK; download the APK artifact. Debug builds are not production signed and their certificate may change between workflows, in which case uninstalling the previous APK may be required.
 
 Brand: KaiserWatch. The Android launcher and in-app header use the supplied pirate-themed artwork, scaled for a compact icon.
+
+## v2.1 — Netflix-style viewing
+One Play button launches the existing in-app Vidlink player engine (JW) in a dedicated full-screen activity. There are no engine/server selection buttons. Movies show only Back; TV shows add always-available Episodes and Next controls. The episode drawer provides season selection, recently released badges and the full episode list. Choosing an episode reloads the same embedded provider in-place. On return to the catalog, the selected episode is saved to Continue Watching. Vidlink's own nextbutton remains enabled, but its timing and source availability are controlled by the third party.

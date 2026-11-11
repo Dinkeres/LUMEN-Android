@@ -131,7 +131,7 @@ function showDetail(){
 if(!current)return;
 const x=current,s=!!saved[x.id],last=currentRecorded(),was=!!watched[keyFor(x)];
 const img=esc(x.poster||''),back=esc(x.background||x.poster||'');
-$('info').innerHTML='<div class="details-banner" style="background-image:url(&quot;'+back+'&quot;)"></div><div class="details-head"><img src="'+img+'" alt=""><div class="details-copy"><div class="overline">'+(x.type==='series'?'TV SERIES':'FEATURE FILM')+'</div><h2>'+esc(x.name)+'</h2><div class="muted">'+esc(x.releaseInfo||x.year||'')+(x.imdbRating?' · ★ '+esc(x.imdbRating):'')+' · '+esc((x.genres||[]).slice(0,3).join(' / '))+'</div></div></div><div class="details-body"><p>'+esc(x.description||'No synopsis available.')+'</p><div class="detail-controls"><button class="primary" id="watchNow">▶ '+(last?'Continue watching':'Watch now')+'</button><button class="ghost" id="saveTitle">'+(s?'♥ In My List':'♡ Add to My List')+'</button><button class="ghost" id="markTitle">'+(was?'✓ Watched':'✓ Mark watched')+'</button></div><p class="muted">Playback stays inside KaiserWatch using Vidlink. History and episode selection are saved on this tablet.</p></div>';
+$('info').innerHTML='<div class="details-banner" style="background-image:url(&quot;'+back+'&quot;)"></div><div class="details-head"><img src="'+img+'" alt=""><div class="details-copy"><div class="overline">'+(x.type==='series'?'TV SERIES':'FEATURE FILM')+'</div><h2>'+esc(x.name)+'</h2><div class="muted">'+esc(x.releaseInfo||x.year||'')+(x.imdbRating?' · ★ '+esc(x.imdbRating):'')+' · '+esc((x.genres||[]).slice(0,3).join(' / '))+'</div></div></div><div class="details-body"><p>'+esc(x.description||'No synopsis available.')+'</p><div class="detail-controls"><button class="primary" id="watchNow">▶ Play</button><button class="ghost" id="saveTitle">'+(s?'♥ In My List':'♡ Add to My List')+'</button><button class="ghost" id="markTitle">'+(was?'✓ Watched':'✓ Mark watched')+'</button></div><p class="muted">Playback stays inside KaiserWatch using Vidlink. History and episode selection are saved on this tablet.</p></div>';
 $('watchNow').onclick=()=>openVidlink();
 $('saveTitle').onclick=()=>{if(saved[x.id])delete saved[x.id];else saved[x.id]={id:x.id,name:x.name,poster:x.poster,background:x.background,type:x.type,year:x.year,releaseInfo:x.releaseInfo};persist();showDetail();toast(saved[x.id]?'Saved to My List':'Removed from My List');};
 $('markTitle').onclick=()=>{const k=keyFor(x);if(watched[k])delete watched[k];else watched[k]=Date.now();persist();showDetail();toast(watched[k]?'Marked watched':'Marked unwatched');};
@@ -194,7 +194,13 @@ const playerUrl=url+'?primaryColor=FFD052&secondaryColor=481B26&iconColor=FFFFFF
 recordPlay(ep,String(id));
 $('sources').innerHTML='';
 if(window.LUMEN_APP&&typeof window.LUMEN_APP.openEmbed==='function'){
-window.LUMEN_APP.openEmbed(playerUrl);
+const epList=(x.videos||[]).filter(v=>Number(v.season)>0&&Number(v.episode)>0)
+ .sort((a,b)=>a.season-b.season||a.episode-b.episode).slice(0,1400)
+ .map(v=>({s:Number(v.season),e:Number(v.episode),t:String(v.title||v.name||'Episode '+v.episode).slice(0,105),
+   r:String(v.released||'').slice(0,30),id:String(v.id||'').slice(0,80)}));
+const playerDetails={id:x.id,name:x.name,type:x.type,tmdb:String(id),
+ season:ep?Number(ep.season):1,episode:ep?Number(ep.episode):1,episodes:epList};
+window.LUMEN_APP.openEmbed(playerUrl,JSON.stringify(playerDetails));
 toast('Opening KaiserWatch player');
 }else{
 $('sources').innerHTML='<div class="action-panel"><h3>Android playback required</h3><p>Install the KaiserWatch APK to watch inside the application.</p></div>';
@@ -202,6 +208,21 @@ $('sources').innerHTML='<div class="action-panel"><h3>Android playback required<
 }
 function back(){++openToken;current=null;episode=null;$('detail').style.display='none';setTab(active==='settings'?'all':active);return true;}
 window.lumenBack=()=>{if($('detail').style.display==='block'){back();return true;}return false;};
+window.kaiserPlayerEnded=(raw)=>{
+ try{
+  const update=typeof raw==='string'?JSON.parse(raw):raw;
+  if(!update||!update.id||update.type!=='series'||!Number.isInteger(update.season)||!Number.isInteger(update.episode))return;
+  const savedEntry=history.find(h=>h.id===update.id&&h.type==='series');
+  if(!savedEntry)return;
+  const selected=current&&current.id===update.id?(current.videos||[]).find(v=>v.season===update.season&&v.episode===update.episode):null;
+  const lastEpisode={id:String(update.episodeId||selected?.id||''),season:update.season,episode:update.episode};
+  history=[{...savedEntry,lastEpisode,at:Date.now()},...history.filter(h=>!(h.id===update.id&&h.type==='series'))].slice(0,120);
+  persist();
+  if(current&&current.id===update.id&&$('detail').style.display!=='none'){
+   episode=lastEpisode.id;showDetail();
+  }else if($('browse').style.display!=='none')render();
+ }catch(e){console.warn('Could not save player selection',e);}
+};
 window.kaiserRefresh=()=>{if($('browse').style.display!=='none')render();};
 function exportLibrary(){
 const data={app:'KaiserWatch',version:1,watchlist:saved,history:history,watched:watched,tmdb:vidlinkCache};

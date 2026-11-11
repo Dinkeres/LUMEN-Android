@@ -23,6 +23,7 @@ import java.io.InputStream;
 
 public class MainActivity extends Activity {
   private static final String TAG = "KaiserWatch";
+  private static final int PLAYER_REQUEST = 7206;
   private FrameLayout root;
   private WebView browser;
   private View fullscreen;
@@ -112,18 +113,20 @@ public class MainActivity extends Activity {
 
   public class PlayerBridge {
     @JavascriptInterface public String diagnostics(){return CrashTracker.report(MainActivity.this);}
-    @JavascriptInterface public void openEmbed(String url) {
+    @JavascriptInterface public void openEmbed(String url, String meta) {
       try {
         Uri parsed=Uri.parse(url);
         if(!"https".equalsIgnoreCase(parsed.getScheme()) ||
            !"vidlink.pro".equalsIgnoreCase(parsed.getHost()) ||
            parsed.getPath()==null ||
            !(parsed.getPath().startsWith("/movie/")||parsed.getPath().startsWith("/tv/")))return;
+        final String payload = meta != null && meta.length() <= 300000 ? meta : "{}";
         runOnUiThread(()->{
           try {
             Intent playerIntent=new Intent(MainActivity.this,EmbedPlayerActivity.class);
             playerIntent.putExtra("url",url);
-            startActivity(playerIntent);
+            playerIntent.putExtra("meta",payload);
+            startActivityForResult(playerIntent,PLAYER_REQUEST);
           }catch(Exception e){Log.e(TAG,"Cannot open in-app embed player",e);
             Toast.makeText(MainActivity.this,"Could not open the in-app player",Toast.LENGTH_LONG).show();}
         });
@@ -132,6 +135,16 @@ public class MainActivity extends Activity {
 
   }
 
+
+  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data) {
+    super.onActivityResult(requestCode,resultCode,data);
+    if(requestCode!=PLAYER_REQUEST||resultCode!=RESULT_OK||data==null||browser==null)return;
+    String selection=data.getStringExtra("selection");
+    if(selection==null||selection.length()>6000)return;
+    browser.evaluateJavascript(
+      "window.kaiserPlayerEnded && window.kaiserPlayerEnded("+
+      org.json.JSONObject.quote(selection)+")",null);
+  }
 
   private void hideVideo() {
     if(fullscreen!=null) {
