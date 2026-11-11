@@ -24,7 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class EmbedPlayerActivity extends Activity {
-  private static final String TAG = "LumenEmbed";
+  private static final String TAG = "KaiserWatchEmbed";
   private FrameLayout root;
   private FrameLayout playerSlot;
   private LinearLayout page;
@@ -60,7 +60,7 @@ public class EmbedPlayerActivity extends Activity {
     toolbar.setBackgroundColor(Color.rgb(19,20,29));
     page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
 
-    Button back=button("← LUMEN");
+    Button back=button("← KaiserWatch");
     back.setOnClickListener(v->finish());
     toolbar.addView(back,new LinearLayout.LayoutParams(0,dp(50),1));
 
@@ -114,7 +114,7 @@ public class EmbedPlayerActivity extends Activity {
     String uri=builder.build().toString();
     CrashTracker.record(this,"VidlinkEmbed","Loading "+(jw?"JW":"Standard")+" engine");
 
-    status.setText(jw?"Loading Vidlink mobile/JW engine…":"Loading Vidlink standard engine…");
+    status.setText(jw?"Loading KaiserWatch player…":"Loading Vidlink standard engine…");
     try {
       WebView web=new WebView(this);
       playerWebView=web;
@@ -158,7 +158,7 @@ public class EmbedPlayerActivity extends Activity {
           if(view==playerWebView)playerWebView=null;
           view.destroy();
           status.setText("This player engine stopped unexpectedly. Try the other engine or return to LUMEN.");
-          Toast.makeText(EmbedPlayerActivity.this,"Video engine stopped. LUMEN is still running.",Toast.LENGTH_LONG).show();
+          Toast.makeText(EmbedPlayerActivity.this,"The video engine stopped. KaiserWatch is still running.",Toast.LENGTH_LONG).show();
           return true;
         }
       });

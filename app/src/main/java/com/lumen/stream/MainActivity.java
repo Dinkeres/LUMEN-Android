@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MainActivity extends Activity {
-  private static final String TAG = "LumenAndroid";
+  private static final String TAG = "KaiserWatch";
   private FrameLayout root;
   private WebView browser;
   private View fullscreen;
@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
         Uri uri = request.getUrl();
         if("app.lumen.local".equals(uri.getHost()))return false;
         if(request.isForMainFrame()) {
-          if("https".equals(uri.getScheme())) openExternal(uri);
+          Log.w(TAG,"Blocked external navigation in KaiserWatch: "+uri.getHost());
           return true;
         }
         return false;
@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
           browser=null;
           createBrowser(); // Never reload the crashed third-party player automatically.
           Toast.makeText(MainActivity.this,
-            "The catalog recovered. Check Diagnostics for the player error.",
+            "The KaiserWatch catalog recovered.",
             Toast.LENGTH_LONG).show();
         }
         return true;
@@ -126,31 +126,9 @@ public class MainActivity extends Activity {
         });
       } catch(Exception e) { Log.e(TAG,"Invalid embed URL",e); }
     }
-    @JavascriptInterface public void openNative(String url) {
-      try {
-        Uri parsed=Uri.parse(url);
-        if(!"https".equalsIgnoreCase(parsed.getScheme()) || parsed.getHost()==null)return;
-        runOnUiThread(()->{
-          try {
-            Intent playerIntent=new Intent(MainActivity.this,NativeMediaActivity.class);
-            playerIntent.putExtra("url",url);
-            startActivity(playerIntent);
-          }catch(Exception e){Log.e(TAG,"Cannot open native media player",e);
-            Toast.makeText(MainActivity.this,"Could not open native video",Toast.LENGTH_LONG).show();}
-        });
-      } catch(Exception e) {Log.e(TAG,"Invalid direct-video URL",e);}
-    }
+
   }
 
-  private void openExternal(Uri url) {
-    try {
-      Intent intent=new Intent(Intent.ACTION_VIEW,url);
-      startActivity(intent);
-    }catch(Exception error){
-      Log.e(TAG,"No browser can open "+url.getHost(),error);
-      Toast.makeText(this,"No browser available to open video. Install or enable a browser.",Toast.LENGTH_LONG).show();
-    }
-  }
 
   private void hideVideo() {
     if(fullscreen!=null) {
@@ -171,6 +149,10 @@ public class MainActivity extends Activity {
     });
   }
 
+  @Override protected void onResume(){
+    super.onResume();
+    if(browser!=null)browser.evaluateJavascript("window.kaiserRefresh && window.kaiserRefresh()",null);
+  }
   @Override protected void onDestroy(){
     hideVideo();
     if(browser!=null) {

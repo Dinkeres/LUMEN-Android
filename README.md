@@ -1,18 +1,18 @@
-# LUMEN Android
+# KaiserWatch — Android
 
-Android streaming catalog app using Cinemeta movie and series metadata. Playback supports authorized, user-configured third-party streams.
+A cinematic Android movie and television catalog using Cinemeta metadata, with a single optional third-party playback provider: Vidlink.
 
-Build: GitHub Actions > Build Android APK, or run `gradle assembleDebug` using JDK 17 and Android SDK 35. The APK is in `app/build/outputs/apk/debug/app-debug.apk`.
+## Highlights
+- Dedicated in-app Vidlink player. No external browser or additional provider menus.
+- Premium red/gold interface with featured title, search, movie and series browsing.
+- Continue Watching (last opened title / last opened episode), watch history, saved titles, and watched labels.
+- Episode picker and manual watched/unwatched controls.
+- Local backup/export/import tools in Settings.
 
-Cinemeta is a metadata provider, not a license to stream copyrighted movies or television. Only use playback sources that you are authorized to access.
+## Playback and limitations
+Vidlink provides a web-embedded player. It cannot be rendered by Android Media3/ExoPlayer as native video without a compatible authorized direct media URL. KaiserWatch uses a native Android Activity with a WebView for that embed. The in-app player was previously confirmed on the user's Android tablet (v1.3); v2.0 requires re-testing.
 
+Continue Watching records opened titles and episodes, not guaranteed exact video timestamp. The third-party player may separately retain its own progress. All library data is local to the Android app's WebView storage. It is not synced to an account. Back it up before uninstalling. Use only video sources that you are entitled to access.
 
-v1.2: Clicking Watch shows an external-browser Vidlink option first; in-app embeds are experimental. The app now recovers if the Android WebView renderer exits, instead of terminating. If playback fails, use the system browser. No third-party title availability is guaranteed.
-
-## LUMEN v1.3 — In-app mobile player
-Vidlink opens in a dedicated full-screen Android Activity inside LUMEN, not a browser or embedded iframe in the catalog. The player runs in a separate app process to protect the movie catalog from unstable web video engines. Vidlink has two modes: Mobile / JW and Standard. Actual provider playback depends on its remote stream and Android WebView compatibility.
-
-A 'Test video' button in the catalog plays MDN's CC0 Flower sample in Android Media3 ExoPlayer. Authorized direct MP4 and HLS sources also use Media3. If this clip plays but Vidlink fails, the likely issue is the third-party embed, not the native Android player.
-
-## v1.4 Playback troubleshooting
-The test video now starts paused and defaults to a software-preferred Media3 decoder (with fallback); there is also a system decoder button. Both native playback and the Vidlink web player run in isolated app processes. From LUMEN's home screen, tap Diagnostics to view recent Android process-exit reasons and player errors. You can copy the report and share it to diagnose crashes without guessing. Diagnostics may include device model, app process names, and error text. No playback provider is guaranteed to work.
+## Build
+GitHub Actions > Build Android APK; download the APK artifact. Debug builds are not production signed and their certificate may change between workflows, in which case uninstalling the previous APK may be required.
