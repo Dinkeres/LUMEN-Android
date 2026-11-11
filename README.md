@@ -16,3 +16,5 @@ Continue Watching records opened titles and episodes, not guaranteed exact video
 
 ## Build
 GitHub Actions > Build Android APK; download the APK artifact. Debug builds are not production signed and their certificate may change between workflows, in which case uninstalling the previous APK may be required.
+
+Brand: KaiserWatch. The Android launcher and in-app header use the supplied pirate-themed artwork, scaled for a compact icon.

@@ -56,6 +56,9 @@ public class MainActivity extends Activity {
       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
         if (!"https".equals(uri.getScheme()) || !"app.lumen.local".equals(uri.getHost())) return null;
+        if ("/icon.webp".equals(uri.getPath())) {
+          return new WebResourceResponse("image/webp",null,getResources().openRawResource(R.drawable.kaiserwatch_icon));
+        }
         if (!"/index.html".equals(uri.getPath()) && !"/".equals(uri.getPath())) {
           return new WebResourceResponse("text/plain","UTF-8",new java.io.ByteArrayInputStream(new byte[0]));
         }
